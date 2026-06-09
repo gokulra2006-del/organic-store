@@ -1,0 +1,28 @@
+f3b95e60b843bdcb1f6175bfb453305c
+"use strict";
+
+var _interopRequireDefault = require("D:/incrix/ReactProject/organic-store/node_modules/@babel/runtime/helpers/interopRequireDefault.js").default;
+var _react = _interopRequireDefault(require("react"));
+var _server = require("react-dom/server");
+var _server2 = require("react-router-dom/server");
+var _App = _interopRequireDefault(require("./App"));
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _jsxFileName = "D:\\incrix\\ReactProject\\organic-store\\src\\App.test.js";
+test("renders the admin dashboard at /admin", () => {
+  const html = (0, _server.renderToStaticMarkup)(/*#__PURE__*/(0, _jsxDevRuntime.jsxDEV)(_server2.StaticRouter, {
+    location: "/admin",
+    children: /*#__PURE__*/(0, _jsxDevRuntime.jsxDEV)(_App.default, {}, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 9,
+      columnNumber: 7
+    }, void 0)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 8,
+    columnNumber: 5
+  }, void 0));
+  expect(html).toContain("Good morning, Admin.");
+  expect(html).toContain("Product Management");
+  expect(html).toContain("10-Minute Order Queue");
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJfcmVhY3QiLCJfaW50ZXJvcFJlcXVpcmVEZWZhdWx0IiwicmVxdWlyZSIsIl9zZXJ2ZXIiLCJfc2VydmVyMiIsIl9BcHAiLCJfanN4RGV2UnVudGltZSIsIl9qc3hGaWxlTmFtZSIsInRlc3QiLCJodG1sIiwicmVuZGVyVG9TdGF0aWNNYXJrdXAiLCJqc3hERVYiLCJTdGF0aWNSb3V0ZXIiLCJsb2NhdGlvbiIsImNoaWxkcmVuIiwiZGVmYXVsdCIsImZpbGVOYW1lIiwibGluZU51bWJlciIsImNvbHVtbk51bWJlciIsImV4cGVjdCIsInRvQ29udGFpbiJdLCJzb3VyY2VzIjpbIkFwcC50ZXN0LmpzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBSZWFjdCBmcm9tIFwicmVhY3RcIjtcbmltcG9ydCB7IHJlbmRlclRvU3RhdGljTWFya3VwIH0gZnJvbSBcInJlYWN0LWRvbS9zZXJ2ZXJcIjtcbmltcG9ydCB7IFN0YXRpY1JvdXRlciB9IGZyb20gXCJyZWFjdC1yb3V0ZXItZG9tL3NlcnZlclwiO1xuaW1wb3J0IEFwcCBmcm9tIFwiLi9BcHBcIjtcblxudGVzdChcInJlbmRlcnMgdGhlIGFkbWluIGRhc2hib2FyZCBhdCAvYWRtaW5cIiwgKCkgPT4ge1xuICBjb25zdCBodG1sID0gcmVuZGVyVG9TdGF0aWNNYXJrdXAoXG4gICAgPFN0YXRpY1JvdXRlciBsb2NhdGlvbj1cIi9hZG1pblwiPlxuICAgICAgPEFwcCAvPlxuICAgIDwvU3RhdGljUm91dGVyPlxuICApO1xuXG4gIGV4cGVjdChodG1sKS50b0NvbnRhaW4oXCJHb29kIG1vcm5pbmcsIEFkbWluLlwiKTtcbiAgZXhwZWN0KGh0bWwpLnRvQ29udGFpbihcIlByb2R1Y3QgTWFuYWdlbWVudFwiKTtcbiAgZXhwZWN0KGh0bWwpLnRvQ29udGFpbihcIjEwLU1pbnV0ZSBPcmRlciBRdWV1ZVwiKTtcbn0pO1xuIl0sIm1hcHBpbmdzIjoiOzs7QUFBQSxJQUFBQSxNQUFBLEdBQUFDLHNCQUFBLENBQUFDLE9BQUE7QUFDQSxJQUFBQyxPQUFBLEdBQUFELE9BQUE7QUFDQSxJQUFBRSxRQUFBLEdBQUFGLE9BQUE7QUFDQSxJQUFBRyxJQUFBLEdBQUFKLHNCQUFBLENBQUFDLE9BQUE7QUFBd0IsSUFBQUksY0FBQSxHQUFBSixPQUFBO0FBQUEsSUFBQUssWUFBQTtBQUV4QkMsSUFBSSxDQUFDLHVDQUF1QyxFQUFFLE1BQU07RUFDbEQsTUFBTUMsSUFBSSxHQUFHLElBQUFDLDRCQUFvQixlQUMvQixJQUFBSixjQUFBLENBQUFLLE1BQUEsRUFBQ1AsUUFBQSxDQUFBUSxZQUFZO0lBQUNDLFFBQVEsRUFBQyxRQUFRO0lBQUFDLFFBQUEsZUFDN0IsSUFBQVIsY0FBQSxDQUFBSyxNQUFBLEVBQUNOLElBQUEsQ0FBQVUsT0FBRztNQUFBQyxRQUFBLEVBQUFULFlBQUE7TUFBQVUsVUFBQTtNQUFBQyxZQUFBO0lBQUEsU0FBRTtFQUFDO0lBQUFGLFFBQUEsRUFBQVQsWUFBQTtJQUFBVSxVQUFBO0lBQUFDLFlBQUE7RUFBQSxTQUNLLENBQ2hCLENBQUM7RUFFREMsTUFBTSxDQUFDVixJQUFJLENBQUMsQ0FBQ1csU0FBUyxDQUFDLHNCQUFzQixDQUFDO0VBQzlDRCxNQUFNLENBQUNWLElBQUksQ0FBQyxDQUFDVyxTQUFTLENBQUMsb0JBQW9CLENBQUM7RUFDNUNELE1BQU0sQ0FBQ1YsSUFBSSxDQUFDLENBQUNXLFNBQVMsQ0FBQyx1QkFBdUIsQ0FBQztBQUNqRCxDQUFDLENBQUMiLCJpZ25vcmVMaXN0IjpbXX0=

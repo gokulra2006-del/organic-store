@@ -1,0 +1,27 @@
+86de1ed2bf4905498a2afb35916fb1c9
+"use strict";
+
+var _interopRequireDefault = require("D:/incrix/ReactProject/organic-store/node_modules/@babel/runtime/helpers/interopRequireDefault.js").default;
+var _react = require("@testing-library/react");
+var _reactRouterDom = require("react-router-dom");
+var _App = _interopRequireDefault(require("./App"));
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _jsxFileName = "D:\\incrix\\ReactProject\\organic-store\\src\\App.test.js";
+test("renders the admin dashboard at /admin", () => {
+  (0, _react.render)(/*#__PURE__*/(0, _jsxDevRuntime.jsxDEV)(_reactRouterDom.MemoryRouter, {
+    initialEntries: ["/admin"],
+    children: /*#__PURE__*/(0, _jsxDevRuntime.jsxDEV)(_App.default, {}, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 8,
+      columnNumber: 7
+    }, void 0)
+  }, void 0, false, {
+    fileName: _jsxFileName,
+    lineNumber: 7,
+    columnNumber: 5
+  }, void 0));
+  expect(_react.screen.getByText("Good morning, Admin.")).not.toBeNull();
+  expect(_react.screen.getAllByText("Product Management").length).toBeGreaterThan(0);
+  expect(_react.screen.getByText("10-Minute Order Queue")).not.toBeNull();
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJfcmVhY3QiLCJyZXF1aXJlIiwiX3JlYWN0Um91dGVyRG9tIiwiX0FwcCIsIl9pbnRlcm9wUmVxdWlyZURlZmF1bHQiLCJfanN4RGV2UnVudGltZSIsIl9qc3hGaWxlTmFtZSIsInRlc3QiLCJyZW5kZXIiLCJqc3hERVYiLCJNZW1vcnlSb3V0ZXIiLCJpbml0aWFsRW50cmllcyIsImNoaWxkcmVuIiwiZGVmYXVsdCIsImZpbGVOYW1lIiwibGluZU51bWJlciIsImNvbHVtbk51bWJlciIsImV4cGVjdCIsInNjcmVlbiIsImdldEJ5VGV4dCIsIm5vdCIsInRvQmVOdWxsIiwiZ2V0QWxsQnlUZXh0IiwibGVuZ3RoIiwidG9CZUdyZWF0ZXJUaGFuIl0sInNvdXJjZXMiOlsiQXBwLnRlc3QuanMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgcmVuZGVyLCBzY3JlZW4gfSBmcm9tIFwiQHRlc3RpbmctbGlicmFyeS9yZWFjdFwiO1xuaW1wb3J0IHsgTWVtb3J5Um91dGVyIH0gZnJvbSBcInJlYWN0LXJvdXRlci1kb21cIjtcbmltcG9ydCBBcHAgZnJvbSBcIi4vQXBwXCI7XG5cbnRlc3QoXCJyZW5kZXJzIHRoZSBhZG1pbiBkYXNoYm9hcmQgYXQgL2FkbWluXCIsICgpID0+IHtcbiAgcmVuZGVyKFxuICAgIDxNZW1vcnlSb3V0ZXIgaW5pdGlhbEVudHJpZXM9e1tcIi9hZG1pblwiXX0+XG4gICAgICA8QXBwIC8+XG4gICAgPC9NZW1vcnlSb3V0ZXI+XG4gICk7XG5cbiAgZXhwZWN0KHNjcmVlbi5nZXRCeVRleHQoXCJHb29kIG1vcm5pbmcsIEFkbWluLlwiKSkubm90LnRvQmVOdWxsKCk7XG4gIGV4cGVjdChzY3JlZW4uZ2V0QWxsQnlUZXh0KFwiUHJvZHVjdCBNYW5hZ2VtZW50XCIpLmxlbmd0aCkudG9CZUdyZWF0ZXJUaGFuKDApO1xuICBleHBlY3Qoc2NyZWVuLmdldEJ5VGV4dChcIjEwLU1pbnV0ZSBPcmRlciBRdWV1ZVwiKSkubm90LnRvQmVOdWxsKCk7XG59KTtcbiJdLCJtYXBwaW5ncyI6Ijs7O0FBQUEsSUFBQUEsTUFBQSxHQUFBQyxPQUFBO0FBQ0EsSUFBQUMsZUFBQSxHQUFBRCxPQUFBO0FBQ0EsSUFBQUUsSUFBQSxHQUFBQyxzQkFBQSxDQUFBSCxPQUFBO0FBQXdCLElBQUFJLGNBQUEsR0FBQUosT0FBQTtBQUFBLElBQUFLLFlBQUE7QUFFeEJDLElBQUksQ0FBQyx1Q0FBdUMsRUFBRSxNQUFNO0VBQ2xELElBQUFDLGFBQU0sZUFDSixJQUFBSCxjQUFBLENBQUFJLE1BQUEsRUFBQ1AsZUFBQSxDQUFBUSxZQUFZO0lBQUNDLGNBQWMsRUFBRSxDQUFDLFFBQVEsQ0FBRTtJQUFBQyxRQUFBLGVBQ3ZDLElBQUFQLGNBQUEsQ0FBQUksTUFBQSxFQUFDTixJQUFBLENBQUFVLE9BQUc7TUFBQUMsUUFBQSxFQUFBUixZQUFBO01BQUFTLFVBQUE7TUFBQUMsWUFBQTtJQUFBLFNBQUU7RUFBQztJQUFBRixRQUFBLEVBQUFSLFlBQUE7SUFBQVMsVUFBQTtJQUFBQyxZQUFBO0VBQUEsU0FDSyxDQUNoQixDQUFDO0VBRURDLE1BQU0sQ0FBQ0MsYUFBTSxDQUFDQyxTQUFTLENBQUMsc0JBQXNCLENBQUMsQ0FBQyxDQUFDQyxHQUFHLENBQUNDLFFBQVEsQ0FBQyxDQUFDO0VBQy9ESixNQUFNLENBQUNDLGFBQU0sQ0FBQ0ksWUFBWSxDQUFDLG9CQUFvQixDQUFDLENBQUNDLE1BQU0sQ0FBQyxDQUFDQyxlQUFlLENBQUMsQ0FBQyxDQUFDO0VBQzNFUCxNQUFNLENBQUNDLGFBQU0sQ0FBQ0MsU0FBUyxDQUFDLHVCQUF1QixDQUFDLENBQUMsQ0FBQ0MsR0FBRyxDQUFDQyxRQUFRLENBQUMsQ0FBQztBQUNsRSxDQUFDLENBQUMiLCJpZ25vcmVMaXN0IjpbXX0=
