@@ -1,493 +1,249 @@
-﻿import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { FaLeaf, FaTruck, FaHeart, FaShieldAlt } from 'react-icons/fa';
-import Hero from '../components/HeroSlider';
-import CategorySection from '../components/CategorySection';
-import ProductGrid from '../components/ProductGrid';
-import Banner from '../components/PromoBanners.js';
-import Newsletter from '../components/Newsletter';
-import { products } from '../data/products';
-import { useCart } from '../context/CartContext';
+import React, { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, HeartHandshake, Leaf, Quote, ShieldCheck, Sparkles, Star, Truck } from "lucide-react";
+import Hero from "../components/HeroSlider";
+import CategorySection from "../components/CategorySection";
+import ProductGrid from "../components/ProductGrid";
+import Newsletter from "../components/Newsletter";
+import { products } from "../data/products";
 
-const Page = styled.div`
-  display: grid;
-  gap: 42px;
-`;
-
-const Section = styled.section`
-  display: grid;
-  gap: 30px;
-`;
-
-const SectionHeader = styled.div`
-  display: grid;
-  gap: 12px;
-  text-align: center;
-`;
-
-const SmallTitle = styled.span`
-  color: #2d6a4f;
-  font-weight: 800;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-`;
-
-const Title = styled.h2`
-  margin: 0;
-  color: #1b4332;
-  font-size: clamp(2.4rem, 3vw, 3.6rem);
-`;
-
-const Subtext = styled.p`
-  margin: 0 auto;
-  max-width: 760px;
-  color: #475569;
-  line-height: 1.8;
-`;
-
-const Tabs = styled.div`
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 12px;
-`;
-
-const TabButton = styled.button`
-  border: none;
-  border-radius: 999px;
-  padding: 12px 24px;
-  background: ${({ active }) => (active ? '#8bc34a' : '#f3f7f2')};
-  color: ${({ active }) => (active ? '#ffffff' : '#475569')};
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-
-  &:hover {
-    background: ${({ active }) => (active ? '#7aaa3d' : '#e6ede6')};
-  }
-`;
-
-const FeatureGrid = styled.div`
-  display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const FeatureCard = styled.article`
-  background: ${({ highlighted }) => (highlighted ? '#82b74b' : '#ffffff')};
-  color: ${({ highlighted }) => (highlighted ? '#ffffff' : '#1f2937')};
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 18px 40px rgba(15, 48, 22, 0.08);
-  min-height: 180px;
-`;
-
-const FeatureIcon = styled.div`
-  width: 46px;
-  height: 46px;
-  border-radius: 18px;
-  background: ${({ highlighted }) => (highlighted ? 'rgba(255,255,255,0.18)' : '#eff8ef')};
-  display: grid;
-  place-items: center;
-  color: ${({ highlighted }) => (highlighted ? '#ffffff' : '#2d6a4f')};
-  font-size: 1.2rem;
-`;
-
-const FeatureTitle = styled.h3`
-  margin: 18px 0 10px;
-  font-size: 1.35rem;
-`;
-
-const FeatureText = styled.p`
-  margin: 0;
-  color: ${({ highlighted }) => (highlighted ? 'rgba(255,255,255,0.9)' : '#64748b')};
-  line-height: 1.8;
-`;
-
-const NewsGrid = styled.div`
-  display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const NewsCard = styled.article`
-  background: #ffffff;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 18px 40px rgba(15, 48, 22, 0.08);
-  display: grid;
-`;
-
-const NewsImage = styled.img`
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-`;
-
-const NewsBody = styled.div`
-  padding: 22px;
-  display: grid;
-  gap: 14px;
-`;
-
-const NewsMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: #94a3b8;
-  font-size: 0.95rem;
-`;
-
-const NewsTitle = styled.h3`
-  margin: 0;
-  font-size: 1.3rem;
-  color: #1b4332;
-`;
-
-const NewsText = styled.p`
-  margin: 0;
-  color: #64748b;
-  line-height: 1.8;
-`;
-
-const NewsLink = styled(Link)`
-  color: #2d6a4f;
-  font-weight: 700;
-  text-decoration: none;
-`;
-
-const ProfilesGrid = styled.div`
-  display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const ProfileCard = styled.article`
-  background: #ffffff;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 18px 40px rgba(15, 48, 22, 0.08);
-  text-align: center;
-`;
-
-const ProfileImage = styled.img`
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-`;
-
-const ProfileBody = styled.div`
-  padding: 24px;
-`;
-
-const ProfileName = styled.h4`
-  margin: 0;
-  color: #1b4332;
-`;
-
-const ProfileRole = styled.p`
-  margin: 8px 0 0;
-  color: #2d6a4f;
-  font-weight: 700;
-`;
-
-const ProfileText = styled.p`
-  margin: 14px 0 0;
-  color: #64748b;
-  line-height: 1.8;
-`;
-
-const TestimonialsGrid = styled.div`
-  display: grid;
-  gap: 24px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const TestimonialCard = styled.article`
-  background: #d8f1d8;
-  border-radius: 28px;
-  padding: 30px 26px;
-  display: grid;
-  gap: 18px;
-`;
-
-const TestimonialQuote = styled.p`
-  margin: 0;
-  color: #000000;
-  line-height: 1.9;
-  font-style: italic;
-`;
-
-const TestimonialProfile = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const Avatar = styled.img`
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid #ffffff;
-`;
-
-const ProfileInfo = styled.div`
-  display: grid;
-  gap: 6px;
-`;
-
-const ProfileNameSmall = styled.span`
-  color: #000000;
-  font-weight: 800;
-`;
-
-const ProfileRoleSmall = styled.span`
-  color: #000000;
-  font-size: 0.95rem;
-  font-weight: 500;
-`;
-
-const news = [
-  {
-    id: 1,
-    image: 'https://images.unsplash.com/photo-1506808547685-e2ba962dedf7?auto=format&fit=crop&w=900&q=80',
-    category: 'Healthy',
-    date: '21st Aug, 2015',
-    comments: 26,
-    title: 'You should add 5 things in your daily meals.',
-  },
-  {
-    id: 2,
-    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=900&q=80',
-    category: 'Nutrition',
-    date: '21st Aug, 2015',
-    comments: 18,
-    title: 'Natural food choices for better health.',
-  },
-  {
-    id: 3,
-    image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80',
-    category: 'Wellness',
-    date: '21st Aug, 2015',
-    comments: 22,
-    title: 'Organic lifestyle tips for every day.',
-  },
+const filters = [
+  { label: "Popular", value: "all" },
+  { label: "Fruits", value: "fruits" },
+  { label: "Vegetables", value: "vegetables" },
+  { label: "Pantry", value: "pantry" },
 ];
 
-const farmers = [
-  {
-    id: 1,
-    name: 'Rebecca Garzany',
-    role: 'Pastoral Farmer',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 2,
-    name: 'George William',
-    role: 'Arable Farmer',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    id: 3,
-    name: 'Giana Fernando',
-    role: 'Farm Manager',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-  },
+const promises = [
+  { icon: Leaf, title: "Picked for freshness", text: "Produce is checked every morning before it reaches our shelves." },
+  { icon: Truck, title: "Fast without shortcuts", text: "Neighborhood fulfillment keeps every delivery quick and careful." },
+  { icon: ShieldCheck, title: "Standards you can trust", text: "Clear labels, responsible sourcing, and a freshness guarantee." },
+  { icon: HeartHandshake, title: "Local farms first", text: "We prioritize growers close to the communities we serve." },
 ];
 
-const testimonials = [
-  {
-    id: 1,
-    name: 'Mark Antony',
-    role: 'Designer',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-    text: 'Who do not know how to pursue an sed pleasure rationally encounter that are extremely win painful nor again is there anyone who loves or pursues or desires obtain pain itself circumstances.',
-  },
-  {
-    id: 2,
-    name: 'William Border',
-    role: 'Designer',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-    text: 'Who do not know how to pursue an sed pleasure rationally encounter that are extremely win painful nor again is there anyone who loves or pursues or desires obtain pain itself circumstances.',
-  },
-  {
-    id: 3,
-    name: 'Jessy Federar',
-    role: 'Cor.Manager',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=800&q=80',
-    text: 'Who do not know how to pursue an sed pleasure rationally encounter that are extremely win painful nor again is there anyone who loves or pursues or desires obtain pain itself circumstances.',
-  },
+const stories = [
+  { tag: "Kitchen notes", title: "Make leafy greens last all week", date: "5 min read", image: "https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&w=900&q=82" },
+  { tag: "Meet the grower", title: "Inside a regenerative family farm", date: "7 min read", image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=82" },
+  { tag: "Wellness", title: "Build a brighter everyday pantry", date: "4 min read", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=82" },
 ];
-
-const categories = ['All Products', 'Fruits', 'Vegetables', 'Beauty', 'Others'];
 
 export default function Home() {
-  const { addItem } = useCart();
-  const [activeTab, setActiveTab] = useState('All Products');
-
-  const filteredProducts = useMemo(() => {
-    if (activeTab === 'All Products') return products;
-    return products.filter((product) => product.category === activeTab);
-  }, [activeTab]);
+  const [filter, setFilter] = useState("all");
+  const filteredProducts = useMemo(
+    () =>
+      filter === "all"
+        ? products.slice(0, 8)
+        : products.filter((p) => p.category === filter).slice(0, 8),
+    [filter]
+  );
 
   return (
-    <Page>
+    <div className="overflow-hidden bg-[#fbfcf9]">
       <Hero />
 
-      <CategorySection />
+      {/* Reduced vertical spacing on mobile */}
+      <div className="space-y-12 py-10 sm:space-y-20 sm:py-16 lg:space-y-24 lg:py-20">
+        <CategorySection />
 
-      <Section style={{padding:'20px'}}>
-        <SectionHeader>
-          <SmallTitle>Featured Products</SmallTitle>
-          <Title>Top selling products</Title>
-          <Subtext>Choose from our best-selling organic groceries, beauty and wellness essentials.</Subtext>
-        </SectionHeader>
-        <Tabs>
-          {categories.map((tab) => (
-            <TabButton key={tab} type="button" active={activeTab === tab} onClick={() => setActiveTab(tab)}>
-              {tab}
-            </TabButton>
-          ))}
-        </Tabs>
-        <ProductGrid products={filteredProducts} onAdd={addItem} />
-      </Section>
+        {/* ── Fresh picks section ── */}
+        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">
+                This week's favorites
+              </p>
+              <h2 className="mt-2 font-sans text-2xl font-black tracking-[-0.035em] text-stone-900 sm:text-3xl sm:text-4xl">
+                Fresh picks, moving fast.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm font-medium leading-6 text-stone-500">
+                Customer-loved staples, seasonal finds, and clean-label pantry heroes.
+              </p>
+            </div>
+            {/* Filter pills — horizontal scroll on mobile */}
+            <div className="flex max-w-full gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {filters.map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => setFilter(item.value)}
+                  className={`min-h-10 shrink-0 rounded-xl px-4 text-sm font-extrabold transition sm:min-h-12 sm:px-5 ${
+                    filter === item.value
+                      ? "bg-[#153d2b] text-white shadow-lg shadow-emerald-950/10"
+                      : "border border-stone-200 bg-white text-stone-600 hover:border-emerald-300 hover:text-emerald-800"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-6 sm:mt-8">
+            <ProductGrid products={filteredProducts} />
+          </div>
+          <div className="mt-6 text-center sm:mt-8">
+            <Link
+              to="/shop"
+              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-stone-300 bg-white px-5 text-sm font-extrabold text-stone-700 transition hover:border-emerald-300 hover:text-emerald-800 sm:min-h-12 sm:px-6"
+            >
+              See all fresh products <ArrowRight size={17} />
+            </Link>
+          </div>
+        </section>
 
-      <Section style={{ padding: '20px'}}>
-        <SectionHeader>
-          <SmallTitle>Why choose us</SmallTitle>
-          <Title>We provide the best organic products</Title>
-          <Subtext>
-            There are many variations of passages of lorem ipsum available, but the majority have suffered alteration in some
-            form, by injected humour.
-          </Subtext>
-        </SectionHeader>
-        <FeatureGrid>
-          <FeatureCard highlighted>
-            <FeatureIcon highlighted>
-              <FaLeaf />
-            </FeatureIcon>
-            <FeatureTitle>100% Organic Products</FeatureTitle>
-            <FeatureText highlighted>
-              Duis aute irure dolor in reprehenderit voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            </FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon>
-              <FaTruck />
-            </FeatureIcon>
-            <FeatureTitle>Any Time, Anywhere Delivery</FeatureTitle>
-            <FeatureText>
-              Duis aute irure dolor in reprehenderit voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            </FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon>
-              <FaHeart />
-            </FeatureIcon>
-            <FeatureTitle>Keeps Your Family Healthy</FeatureTitle>
-            <FeatureText>
-              Duis aute irure dolor in reprehenderit voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            </FeatureText>
-          </FeatureCard>
-          <FeatureCard>
-            <FeatureIcon>
-              <FaShieldAlt />
-            </FeatureIcon>
-            <FeatureTitle>Clean, Fresh and Safety</FeatureTitle>
-            <FeatureText>
-              Duis aute irure dolor in reprehenderit voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-            </FeatureText>
-          </FeatureCard>
-        </FeatureGrid>
-      </Section>
+        {/* ── Organic standard banner ── */}
+        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-[24px] bg-[#153d2b] px-5 py-8 text-white sm:rounded-[32px] sm:px-10 sm:py-14 lg:px-14">
+            <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-lime-300/10 blur-2xl" />
+            <div className="relative grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-extrabold text-lime-200 ring-1 ring-white/10">
+                  <Sparkles size={15} /> The Organic Standard
+                </span>
+                <h2 className="mt-4 font-sans text-2xl font-black tracking-[-0.035em] sm:mt-5 sm:text-3xl sm:text-4xl">
+                  Freshness is not a label. It's the whole system.
+                </h2>
+                <p className="mt-3 max-w-xl text-sm font-medium leading-7 text-emerald-50/70 sm:mt-4">
+                  From the farms we choose to the routes our riders take, every decision is designed to deliver food that looks better, lasts longer, and tastes the way it should.
+                </p>
+                <Link
+                  to="/about"
+                  className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-xl bg-lime-300 px-5 text-sm font-extrabold text-emerald-950 transition hover:bg-lime-200 sm:mt-7 sm:min-h-12"
+                >
+                  Our sourcing promise <ArrowRight size={17} />
+                </Link>
+              </div>
+              {/* Promise cards — 2-col on mobile, 2-col on desktop */}
+              <div className="grid grid-cols-2 gap-3">
+                {promises.map(({ icon: Icon, title, text }) => (
+                  <article
+                    key={title}
+                    className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/10 backdrop-blur-sm sm:p-5"
+                  >
+                    <Icon size={20} className="text-lime-300 sm:text-[22px]" />
+                    <h3 className="mt-3 font-sans text-sm font-extrabold sm:mt-4 sm:text-base">
+                      {title}
+                    </h3>
+                    <p className="mt-1.5 text-[11px] font-medium leading-5 text-emerald-50/65 sm:mt-2 sm:text-xs">
+                      {text}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <Section style={{ padding: '20px' }}>
-        <SectionHeader>
-          <SmallTitle>Our latest news</SmallTitle>
-          <Title>News & blog articles</Title>
-        </SectionHeader>
-        <NewsGrid>
-          {news.map((item) => (
-            <NewsCard key={item.id}>
-              <NewsImage src={item.image} alt={item.title} />
-              <NewsBody>
-                <NewsMeta>
-                  <span>{item.category}</span>
-                  <span>•</span>
-                  <span>{item.date}</span>
-                  <span>•</span>
-                  <span>{item.comments}</span>
-                </NewsMeta>
-                <NewsTitle>{item.title}</NewsTitle>
-                <NewsText>As more and more people are turning to organic lifestyles & trying improve their health...</NewsText>
-                <NewsLink to="/">Read more →</NewsLink>
-              </NewsBody>
-            </NewsCard>
-          ))}
-        </NewsGrid>
-      </Section>
+        {/* ── Hero image + testimonial ── */}
+        <section className="mx-auto grid w-full max-w-7xl gap-4 px-4 sm:gap-5 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
+          {/* Hero image */}
+          <div className="relative min-h-[280px] overflow-hidden rounded-[24px] sm:min-h-[430px] sm:rounded-[30px]">
+            <img
+              src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=1200&q=85"
+              alt="Colorful fresh produce"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/15 to-transparent" />
+            <div className="absolute bottom-0 p-5 text-white sm:p-7 sm:p-9">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-lime-200">
+                Seasonal drop
+              </p>
+              <h2 className="mt-2 max-w-lg font-sans text-xl font-black tracking-tight sm:text-3xl sm:text-4xl">
+                Summer color, picked at its peak.
+              </h2>
+              <p className="mt-2 max-w-lg text-xs font-medium leading-6 text-white/75 sm:mt-3 sm:text-sm">
+                Discover juicy stone fruit, sweet berries, and crisp salad staples from nearby growers.
+              </p>
+              <Link
+                to="/shop?category=fruits"
+                className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-extrabold text-emerald-950 sm:mt-6 sm:min-h-12 sm:px-5"
+              >
+                Shop the harvest <ArrowRight size={17} />
+              </Link>
+            </div>
+          </div>
 
-      <Section style={{ padding: '20px' }}>
-        <SectionHeader>
-          <SmallTitle>Our farmers</SmallTitle>
-          <Title>Meet our trusted partners</Title>
-        </SectionHeader>
-        <ProfilesGrid>
-          {farmers.map((person) => (
-            <ProfileCard key={person.id}>
-              <ProfileImage src={person.image} alt={person.name} />
-              <ProfileBody>
-                <ProfileName>{person.name}</ProfileName>
-                <ProfileRole>{person.role}</ProfileRole>
-                <ProfileText>Praising pain was born and I will give you a complete account of the system.</ProfileText>
-              </ProfileBody>
-            </ProfileCard>
-          ))}
-        </ProfilesGrid>
-      </Section>
+          {/* Testimonial */}
+          <div className="flex flex-col justify-between rounded-[24px] bg-amber-100 p-6 sm:rounded-[30px] sm:p-7 sm:p-9">
+            <Quote size={32} className="text-amber-700/40 sm:text-[36px]" />
+            <blockquote className="my-6 font-sans text-xl font-black leading-snug tracking-tight text-stone-900 sm:my-8 sm:text-2xl sm:text-3xl">
+              "It feels like a farmer's market showed up at my door, only faster."
+            </blockquote>
+            <div>
+              <div className="flex gap-1 text-amber-500">
+                {[1, 2, 3, 4, 5].map((item) => (
+                  <Star key={item} size={16} fill="currentColor" />
+                ))}
+              </div>
+              <p className="mt-2 text-sm font-extrabold text-stone-900 sm:mt-3">Mark Antony</p>
+              <p className="mt-1 text-xs font-bold text-stone-500">Verified weekly customer</p>
+            </div>
+          </div>
+        </section>
 
-      <Section style={{ padding: '20px' }}>
-        <SectionHeader>
-          <SmallTitle>Testimonials</SmallTitle>
-          <Title>What our customers say</Title>
-        </SectionHeader>
-        <TestimonialsGrid>
-          {testimonials.map((item) => (
-            <TestimonialCard key={item.id}>
-              <TestimonialQuote>{item.text}</TestimonialQuote>
-              <TestimonialProfile>
-                <Avatar src={item.image} alt={item.name} />
-                <ProfileInfo>
-                  <ProfileNameSmall>{item.name}</ProfileNameSmall>
-                  <ProfileRoleSmall>{item.role}</ProfileRoleSmall>
-                </ProfileInfo>
-              </TestimonialProfile>
-            </TestimonialCard>
-          ))}
-        </TestimonialsGrid>
-      </Section>
+        {/* ── Journal ── */}
+        <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">
+                From our journal
+              </p>
+              <h2 className="mt-2 font-sans text-2xl font-black tracking-[-0.035em] text-stone-900 sm:text-3xl sm:text-4xl">
+                Eat well. Waste less.
+              </h2>
+            </div>
+            <Link
+              to="/"
+              className="hidden min-h-12 items-center gap-2 text-sm font-extrabold text-emerald-800 sm:flex"
+            >
+              View all stories <ArrowRight size={17} />
+            </Link>
+          </div>
 
-      <Banner />
-      <Newsletter />
-    </Page>
+          {/* Stories — single col on mobile, 3-col on md+ */}
+          <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-5 md:grid-cols-3">
+            {stories.map((story) => (
+              <article
+                key={story.title}
+                className="group overflow-hidden rounded-[20px] border border-stone-200 bg-white sm:rounded-[24px]"
+              >
+                <div className="overflow-hidden">
+                  <img
+                    src={story.image}
+                    alt=""
+                    className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                    <span>{story.tag}</span>
+                    <span className="text-stone-400">{story.date}</span>
+                  </div>
+                  <h3 className="mt-2 font-sans text-base font-extrabold leading-snug text-stone-900 sm:mt-3 sm:text-lg">
+                    {story.title}
+                  </h3>
+                  <Link
+                    to="/"
+                    className="mt-3 inline-flex min-h-10 items-center gap-2 text-xs font-extrabold text-stone-600 group-hover:text-emerald-700 sm:mt-4 sm:min-h-12"
+                  >
+                    Read the story <ArrowRight size={15} />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* "View all" link visible on mobile below the cards */}
+          <div className="mt-5 text-center sm:hidden">
+            <Link
+              to="/"
+              className="inline-flex min-h-10 items-center gap-2 text-sm font-extrabold text-emerald-800"
+            >
+              View all stories <ArrowRight size={17} />
+            </Link>
+          </div>
+        </section>
+
+        <Newsletter />
+      </div>
+    </div>
   );
 }

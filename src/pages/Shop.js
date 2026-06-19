@@ -20,105 +20,139 @@ const Page = styled.div`
 const TopBar = styled.div`
   background: #fff;
   border-bottom: 1px solid #e2e8f0;
-  padding: 20px 40px;
-  @media (max-width: 768px) {
-    padding: 16px;
+  /* Tighter padding on mobile */
+  padding: 14px 16px;
+  @media (min-width: 768px) {
+    padding: 20px 40px;
   }
 `;
+
 const TopInner = styled.div`
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 `;
+
 const PageTitle = styled.h1`
   margin: 0;
-  font-size: 1.6rem;
+  /* Smaller on mobile */
+  font-size: 1.3rem;
   font-weight: 900;
   color: #0f172a;
+  @media (min-width: 640px) {
+    font-size: 1.6rem;
+  }
 `;
+
 const Count = styled.span`
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 600;
+  @media (min-width: 640px) {
+    font-size: 13px;
+  }
 `;
 
 const SearchWrap = styled.div`
   position: relative;
+  /* Full width below title on mobile */
   flex: 1;
+  min-width: 0;
   max-width: 400px;
   @media (max-width: 768px) {
     max-width: 100%;
     order: 3;
     width: 100%;
+    flex-basis: 100%;
   }
 `;
+
 const SearchIcon = styled.div`
   position: absolute;
-  left: 14px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 13px;
 `;
+
 const SearchInput = styled.input`
   width: 100%;
-  padding: 11px 14px 11px 40px;
+  /* 44px touch target on mobile */
+  padding: 10px 12px 10px 36px;
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   outline: none;
   transition: border-color 0.2s;
+  -webkit-appearance: none;
   &:focus {
     border-color: #16a34a;
   }
   &::placeholder {
     color: #94a3b8;
   }
+  @media (min-width: 640px) {
+    padding: 11px 14px 11px 40px;
+  }
 `;
 
 const SortBtn = styled.button`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 10px 12px;
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   background: #fff;
-  font-size: 13px;
+  /* Smaller font on mobile */
+  font-size: 12px;
   font-weight: 700;
   color: #374151;
   cursor: pointer;
   transition: all 0.2s;
-  &:hover {
-    border-color: #16a34a;
-    color: #16a34a;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  @media (min-width: 640px) {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+  @media (hover: hover) {
+    &:hover {
+      border-color: #16a34a;
+      color: #16a34a;
+    }
   }
 `;
 
 const Layout = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 40px 60px;
+  /* Full-width single column on mobile */
+  padding: 12px 12px 48px;
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 28px;
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    padding: 16px 16px 40px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  @media (min-width: 900px) {
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+    padding: 24px 40px 60px;
   }
 `;
 
-/* Sidebar */
+/* Sidebar hidden on mobile — filters surface via pill strip instead */
 const Sidebar = styled.aside`
-  @media (max-width: 900px) {
-    display: none;
+  display: none;
+  @media (min-width: 900px) {
+    display: block;
   }
 `;
+
 const FilterCard = styled.div`
   background: #fff;
   border: 1.5px solid #f1f5f9;
@@ -126,6 +160,7 @@ const FilterCard = styled.div`
   padding: 20px;
   margin-bottom: 16px;
 `;
+
 const FilterTitle = styled.h3`
   margin: 0 0 14px;
   font-size: 13px;
@@ -134,6 +169,7 @@ const FilterTitle = styled.h3`
   letter-spacing: 0.8px;
   color: #0f172a;
 `;
+
 const CatItem = styled.button`
   display: flex;
   align-items: center;
@@ -153,6 +189,7 @@ const CatItem = styled.button`
     background: #f0fdf4;
   }
 `;
+
 const CatCount = styled.span`
   font-size: 11px;
   color: #94a3b8;
@@ -167,6 +204,7 @@ const PriceRange = styled.div`
   gap: 8px;
   align-items: center;
 `;
+
 const PriceInput = styled.input`
   width: 80px;
   padding: 8px 10px;
@@ -196,12 +234,14 @@ const RatingRow = styled.button`
     background: #f0fdf4;
   }
 `;
+
 const Stars = styled.div`
   display: flex;
   gap: 2px;
   color: #fbbf24;
   font-size: 12px;
 `;
+
 const StarGray = styled.span`
   color: #e2e8f0;
 `;
@@ -227,23 +267,27 @@ const ClearBtn = styled.button`
   }
 `;
 
-/* Mobile filter bar */
+/* Mobile category pill strip */
 const MobileFilters = styled.div`
-  display: none;
-  @media (max-width: 900px) {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  margin-bottom: 12px;
+  @media (min-width: 900px) {
+    display: none;
   }
 `;
+
 const MobPill = styled.button`
   flex-shrink: 0;
-  padding: 8px 16px;
+  /* 36px height — touchable but not overly large */
+  padding: 7px 14px;
   border: 1.5px solid ${({ $a }) => ($a ? "#16a34a" : "#e2e8f0")};
   background: ${({ $a }) => ($a ? "#16a34a" : "#fff")};
   color: ${({ $a }) => ($a ? "#fff" : "#374151")};
@@ -252,41 +296,57 @@ const MobPill = styled.button`
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 `;
 
-/* Grid */
+/* Product grid — 2 columns on mobile, auto-fill on larger */
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 18px;
-  @media (max-width: 500px) {
-    grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  @media (min-width: 480px) {
     gap: 12px;
+  }
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 18px;
   }
 `;
 
 const EmptyState = styled.div`
   text-align: center;
-  padding: 80px 20px;
-  grid-column: 1/-1;
+  padding: 60px 20px;
+  grid-column: 1 / -1;
+  @media (min-width: 640px) {
+    padding: 80px 20px;
+  }
 `;
+
 const EmptyIcon = styled.div`
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: #f0fdf4;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
-  font-size: 32px;
+  margin: 0 auto 16px;
+  font-size: 28px;
   color: #16a34a;
+  @media (min-width: 640px) {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
 `;
+
 const EmptyTitle = styled.h3`
   margin: 0 0 8px;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: #0f172a;
 `;
+
 const EmptyText = styled.p`
   margin: 0;
   color: #64748b;
@@ -318,7 +378,7 @@ export default function Shop() {
       res = res.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q),
+          p.category.toLowerCase().includes(q)
       );
     }
     if (minPrice) res = res.filter((p) => p.price >= parseFloat(minPrice));
@@ -364,53 +424,44 @@ export default function Shop() {
                 s === "featured"
                   ? "price-low"
                   : s === "price-low"
-                    ? "price-high"
-                    : s === "price-high"
-                      ? "rating"
-                      : "featured",
+                  ? "price-high"
+                  : s === "price-high"
+                  ? "rating"
+                  : "featured"
               )
             }
           >
-            <FaSort /> Sort:{" "}
+            <FaSort />
             {sort === "featured"
               ? "Featured"
               : sort === "price-low"
-                ? "Price: Low"
-                : sort === "price-high"
-                  ? "Price: High"
-                  : "Top Rated"}
+              ? "Price ↑"
+              : sort === "price-high"
+              ? "Price ↓"
+              : "Top Rated"}
           </SortBtn>
         </TopInner>
       </TopBar>
 
       <Layout>
+        {/* Desktop sidebar filters */}
         <Sidebar>
           {hasFilters && (
             <ClearBtn onClick={clearFilters}>
               <FaTimes /> Clear Filters
             </ClearBtn>
           )}
-
           <FilterCard style={{ marginTop: hasFilters ? 16 : 0 }}>
             <FilterTitle>Categories</FilterTitle>
             {CATS.map((c) => (
-              <CatItem
-                key={c.key}
-                $a={cat === c.key}
-                onClick={() => setCat(c.key)}
-              >
+              <CatItem key={c.key} $a={cat === c.key} onClick={() => setCat(c.key)}>
                 {c.label}
                 <CatCount>
-                  {
-                    products.filter((p) =>
-                      c.key === "all" ? true : p.category === c.key,
-                    ).length
-                  }
+                  {products.filter((p) => c.key === "all" ? true : p.category === c.key).length}
                 </CatCount>
               </CatItem>
             ))}
           </FilterCard>
-
           <FilterCard>
             <FilterTitle>Price Range</FilterTitle>
             <PriceRange>
@@ -429,7 +480,6 @@ export default function Shop() {
               />
             </PriceRange>
           </FilterCard>
-
           <FilterCard>
             <FilterTitle>Minimum Rating</FilterTitle>
             {[4, 3, 2, 1].map((r) => (
@@ -443,9 +493,7 @@ export default function Shop() {
                     <span key={i}>{i <= r ? "★" : <StarGray>★</StarGray>}</span>
                   ))}
                 </Stars>
-                <span
-                  style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}
-                >
+                <span style={{ fontSize: 12, color: "#64748b", fontWeight: 600 }}>
                   & Up
                 </span>
               </RatingRow>
@@ -453,7 +501,9 @@ export default function Shop() {
           </FilterCard>
         </Sidebar>
 
+        {/* Main content */}
         <div>
+          {/* Mobile category pill strip */}
           <MobileFilters>
             {CATS.map((c) => (
               <MobPill
@@ -475,9 +525,7 @@ export default function Shop() {
                   <FaLeaf />
                 </EmptyIcon>
                 <EmptyTitle>No products found</EmptyTitle>
-                <EmptyText>
-                  Try adjusting your filters or search query
-                </EmptyText>
+                <EmptyText>Try adjusting your filters or search query</EmptyText>
               </EmptyState>
             )}
           </Grid>

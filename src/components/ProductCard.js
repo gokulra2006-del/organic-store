@@ -4,12 +4,11 @@ import styled from "styled-components";
 import { FaEye, FaShoppingCart, FaHeart, FaStar, FaCheck, FaPlus, FaMinus } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
-import { useAuth } from '../context/AuthContext';
 
 const Card = styled.div`
   background: #fff;
-  border: 1.5px solid #f1f5f9;
-  border-radius: 16px;
+  border: 1px solid #e7e5e4;
+  border-radius: 20px;
   overflow: hidden;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
   position: relative;
@@ -17,8 +16,8 @@ const Card = styled.div`
   flex-direction: column;
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-    border-color: #dcfce7;
+    box-shadow: 0 18px 45px rgba(21, 61, 43, 0.11);
+    border-color: #bbf7d0;
   }
 `;
 
@@ -29,7 +28,7 @@ const ImageWrap = styled.div`
 
 const Image = styled.img`
   width: 100%;
-  height: 170px;
+  height: 190px;
   object-fit: cover;
   border-radius: 12px;
   display: block;
@@ -193,6 +192,7 @@ const AddBtn = styled.button`
   align-items: center;
   justify-content: center;
   gap: 6px;
+  min-height: 48px;
   padding: 10px;
   border: none;
   border-radius: 10px;
@@ -222,8 +222,8 @@ const QtyControl = styled.div`
 `;
 
 const QtyBtn = styled.button`
-  width: 32px;
-  height: 36px;
+  width: 44px;
+  height: 48px;
   border: none;
   background: #fff;
   color: #475569;
