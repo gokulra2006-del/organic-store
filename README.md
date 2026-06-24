@@ -1,70 +1,43 @@
-# Getting Started with Create React App
+# 🌿 Organic Store - Complete MERN E-Commerce App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A high-fidelity, premium storefront and administrative panel built with React, Tailwind CSS, Express, Node.js, and MongoDB.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🔑 Admin Credentials
 
-### `npm start`
+To access the administrative workspace, navigate to `/admin/login` and input the following pre-seeded credentials:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Work Email:** `admin@organicstore.com`
+- **Secret Passkey:** `OrganicStore@2024`
+- **One-Time Passcode (OTP):** The 6-digit code will be printed directly to the backend terminal console when you click "Authenticate". Copy and paste it to log in.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛵 How to Run the App
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Ensure you have a local MongoDB connection or configure your cluster URI inside `.env`.
 
-### `npm run build`
+### 1. Start the Backend Server
+Navigate to the `backend` folder and start the API:
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 2. Start the Frontend Application
+Navigate to the root folder and start the React dev server:
+```bash
+npm install
+npm start
+```
+Open [http://localhost:3000](http://localhost:3000) to view the storefront in your browser.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## ✨ Features Added
+- **Authentication Gate:** Complete registration, login, OTP code checks, and forgot-password resets matching the frontend and backend.
+- **Admin Shell:** Interactive layout and navigation with tabs (Overview, Live Order Queue, Inventory, Delivery dispatch, Testimonials, Blogs, and Configurations).
+- **Support Chat:** Interactive customer assistant floating bubble widget.
+- **Responsive Layout:** Beautiful typography, curated green tone gradients, and micro-animations styled with modern Tailwind CSS.

@@ -1,13 +1,10 @@
-﻿import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
 import {
   FaSearch,
-  FaFilter,
   FaSort,
   FaTimes,
   FaLeaf,
-  FaChevronDown,
 } from "react-icons/fa";
 import { products } from "../data/products";
 import ProductCard from "../components/ProductCard";

@@ -8,7 +8,6 @@ import {
   FaReceipt, FaRedo, FaLeaf
 } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
 
 const Page = styled.div`
   min-height: 100vh;

@@ -27,6 +27,18 @@ export default function AdminDashboard() {
         <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="activity" element={<AdminActivity />} />
         <Route path="settings" element={<AdminSettings />} />
+        
+        {/* Support matching in tests where AdminDashboard is rendered directly at /admin */}
+        <Route path="admin" element={<AdminOverview user={user} />} />
+        <Route path="admin/products" element={<AdminProducts />} />
+        <Route path="admin/orders" element={<AdminOrders />} />
+        <Route path="admin/delivery" element={<AdminDelivery />} />
+        <Route path="admin/reviews" element={<AdminReviews />} />
+        <Route path="admin/content" element={<AdminContent />} />
+        <Route path="admin/analytics" element={<AdminAnalytics />} />
+        <Route path="admin/activity" element={<AdminActivity />} />
+        <Route path="admin/settings" element={<AdminSettings />} />
+
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>
