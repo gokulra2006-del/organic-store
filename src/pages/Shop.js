@@ -6,7 +6,7 @@ import {
   FaTimes,
   FaLeaf,
 } from "react-icons/fa";
-import { products } from "../data/products";
+import { useProducts } from "../context/ProductContext";
 import ProductCard from "../components/ProductCard";
 
 const Page = styled.div`
@@ -267,9 +267,12 @@ const ClearBtn = styled.button`
 /* Mobile category pill strip */
 const MobileFilters = styled.div`
   display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
+  width: 100%;
+  max-width: 100%;
   /* Hide scrollbar */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -308,6 +311,12 @@ const Grid = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 18px;
   }
+`;
+
+const MainContent = styled.div`
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
 `;
 
 const EmptyState = styled.div`
@@ -360,6 +369,7 @@ const CATS = [
 ];
 
 export default function Shop() {
+  const { visibleProducts: products } = useProducts();
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
   const [sort, setSort] = useState("featured");
@@ -385,7 +395,7 @@ export default function Shop() {
     if (sort === "price-high") res.sort((a, b) => b.price - a.price);
     if (sort === "rating") res.sort((a, b) => b.rating - a.rating);
     return res;
-  }, [search, cat, sort, minPrice, maxPrice, rating]);
+  }, [search, cat, sort, minPrice, maxPrice, rating, products]);
 
   const hasFilters = cat !== "all" || minPrice || maxPrice || rating > 0;
 
@@ -499,7 +509,7 @@ export default function Shop() {
         </Sidebar>
 
         {/* Main content */}
-        <div>
+        <MainContent>
           {/* Mobile category pill strip */}
           <MobileFilters>
             {CATS.map((c) => (
@@ -526,7 +536,7 @@ export default function Shop() {
               </EmptyState>
             )}
           </Grid>
-        </div>
+        </MainContent>
       </Layout>
     </Page>
   );

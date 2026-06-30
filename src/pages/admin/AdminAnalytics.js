@@ -20,7 +20,7 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-4">
-        <h3 className="text-sm font-black text-stone-850">Weekly Sales Graph ($)</h3>
+        <h3 className="text-sm font-black text-stone-850">Weekly Sales Graph (₹)</h3>
         <div className="h-[300px] w-full text-xs">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>

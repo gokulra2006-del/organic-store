@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaCreditCard, FaArrowLeft, FaCheckCircle } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { paymentAPI } from '../services/api';
 
 const CheckoutLayout = styled.section`
   padding: 40px 24px;
@@ -134,6 +135,13 @@ const SubmitButton = styled.button`
   &:active {
     transform: translateY(0);
   }
+
+  &:disabled {
+    background: #a8a29e;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 `;
 
 const BackLink = styled(Link)`
@@ -228,25 +236,161 @@ const EmptyCheckout = styled.div`
   }
 `;
 
+const PaymentOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+const Spinner = styled.div`
+  width: 64px;
+  height: 64px;
+  border: 4px solid rgba(255, 255, 255, 0.05);
+  border-left-color: #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 32px;
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const OverlayText = styled.h2`
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+`;
+
+const OverlaySubText = styled.p`
+  color: #a3a3a3;
+  margin-top: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+`;
+
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, subtotal, total, placeOrder } = useCart();
   const [order, setOrder] = useState({ name: '', email: '', address: '', city: '', zip: '' });
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleChange = (field, value) => {
     setOrder((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!order.name || !order.email || !order.address) {
       alert('Please fill in all required fields');
       return;
     }
-    // 🔥 Save order to history before clearing cart
-    placeOrder(total);
-    alert('✓ Order placed successfully! Thank you for shopping with Organic Store.');
-    navigate('/account');
+
+    setIsProcessing(true);
+
+    try {
+      // 1. Create order on the backend
+      const data = await paymentAPI.createOrder(total);
+
+      if (!data.success) {
+        alert('Failed to initiate payment. Please try again.');
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2. Set up Razorpay Checkout SDK options
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_placeholder_key',
+        amount: data.amount,
+        currency: data.currency,
+        name: 'Organic Store',
+        description: 'Payment for Organic Products',
+        order_id: data.orderId,
+        handler: async function (response) {
+          try {
+            // 3. Verify signature on the backend
+            const verifyData = await paymentAPI.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            if (verifyData.success) {
+              // Create order in backend database
+              const orderPayload = {
+                items,
+                shippingAddress: {
+                  fullName: order.name,
+                  email: order.email,
+                  address: order.address,
+                  city: order.city,
+                  pincode: order.zip
+                },
+                paymentMethod: 'online',
+                totalAmount: total
+              };
+              
+              const backendOrder = await import('../services/api').then(module => module.orderAPI.placeOrder(orderPayload));
+
+              placeOrder(total);
+              navigate('/payment-success', { 
+                state: { 
+                  paymentId: response.razorpay_payment_id, 
+                  orderId: backendOrder?.data?.data?.orderNumber || backendOrder?.data?.orderNumber || data.orderId 
+                }
+              });
+            } else {
+              alert('Payment verification failed.');
+            }
+          } catch (err) {
+            console.error('Payment verification error:', err);
+            alert('An error occurred while verifying the payment.');
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: order.name,
+          email: order.email,
+          contact: ''
+        },
+        theme: {
+          color: '#153d2b'
+        },
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+          }
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error('Payment order creation error:', error);
+      alert('Error connecting to payment gateway.');
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {
@@ -262,13 +406,21 @@ export default function Checkout() {
   }
 
   return (
-    <CheckoutLayout>
-      <Card>
-        <HeaderSection>
-          <h1>
-            <FaCreditCard /> Checkout
-          </h1>
-        </HeaderSection>
+    <>
+      {isProcessing && (
+        <PaymentOverlay>
+          <Spinner />
+          <OverlayText>Awaiting Payment</OverlayText>
+          <OverlaySubText>Please complete the transaction in the secure window</OverlaySubText>
+        </PaymentOverlay>
+      )}
+      <CheckoutLayout>
+        <Card>
+          <HeaderSection>
+            <h1>
+              <FaCreditCard /> Checkout
+            </h1>
+          </HeaderSection>
         <Description>
           Enter your shipping details to complete your order securely.
         </Description>
@@ -319,9 +471,9 @@ export default function Checkout() {
               />
             </div>
           </FieldGroup>
-          <SubmitButton type="submit">
+          <SubmitButton type="submit" disabled={isProcessing}>
             <FaCheckCircle size={18} />
-            Place Order for ${total.toFixed(2)}
+            {isProcessing ? 'Processing Payment...' : `Place Order for ₹${total.toFixed(2)}`}
           </SubmitButton>
         </FormGrid>
         <BackLink to="/cart">
@@ -338,18 +490,19 @@ export default function Checkout() {
           </Description>
           <SummaryRow>
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₹{subtotal.toFixed(2)}</span>
           </SummaryRow>
           <SummaryRow style={{ fontWeight: 500, color: '#64748b', borderBottom: '1px solid rgba(186, 247, 208, 0.3)' }}>
             <span>Shipping</span>
-            <span>$5.00</span>
+            <span>₹5.00</span>
           </SummaryRow>
           <SummaryRow>
             <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₹{total.toFixed(2)}</span>
           </SummaryRow>
         </SummaryCard>
       </SummaryWrapper>
-    </CheckoutLayout>
+      </CheckoutLayout>
+    </>
   );
 }

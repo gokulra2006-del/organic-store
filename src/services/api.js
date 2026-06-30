@@ -117,7 +117,7 @@ export const orderAPI = {
   getOrder: (id) => api.get(`/orders/${id}`),
   cancelOrder: (id) => api.put(`/orders/${id}/cancel`),
   getAllOrders: () => api.get('/orders/admin'),
-  updateOrderStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
+  updateOrderStatus: (id, status) => api.patch(`/orders/admin/${id}/status`, { status }),
 };
 
 // ── WISHLIST ENDPOINTS ────────────────────────────────────────────
@@ -142,6 +142,12 @@ export const userAPI = {
   addAddress: (data) => api.post('/users/addresses', data),
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
+};
+
+// ── PAYMENT ENDPOINTS ─────────────────────────────────────────────
+export const paymentAPI = {
+  createOrder: (amount) => api.post('/payment/create-order', { amount }),
+  verifyPayment: (data) => api.post('/payment/verify-payment', data),
 };
 
 export default api;

@@ -2,40 +2,62 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const ApiError = require('../utils/ApiError');
+const invoiceService = require('./invoice.service');
+const { sendEmail } = require('../config/nodemailer');
 
 class OrderService {
-    async createOrder(userId, orderData) {
-        const cart = await Cart.findOne({ user: userId }).populate('items.product');
-        if (!cart || cart.items.length === 0) throw new ApiError(400, 'Cart is empty');
+    async createOrder(user, orderData) {
+        if (!orderData.items || orderData.items.length === 0) throw new ApiError(400, 'Order items are required');
 
-        const items = cart.items.map(item => ({
-            product: item.product._id,
-            name: item.product.name,
+        const items = orderData.items.map(item => ({
+            product: item.id || item.product || item._id,
+            name: item.name,
             quantity: item.quantity,
             price: item.price,
-            image: item.product.images?.[0]?.filename
+            image: item.image || (item.images && item.images[0]?.filename)
         }));
 
         const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const shipping = subtotal > 500 ? 0 : 40;
         const tax = Math.round(subtotal * 0.05);
-        const total = subtotal + shipping + tax - (cart.couponDiscount || 0);
+        const total = subtotal + shipping + tax;
 
         const order = await Order.create({
-            user: userId,
+            user: user._id || undefined,
             items,
             shippingAddress: orderData.shippingAddress,
-            pricing: { subtotal, shipping, tax, discount: cart.couponDiscount || 0, total },
-            paymentMethod: orderData.paymentMethod || 'cod',
-            coupon: cart.coupon,
+            pricing: { subtotal, shipping, tax, discount: 0, total },
+            paymentMethod: orderData.paymentMethod || 'online',
+            paymentStatus: orderData.paymentMethod === 'online' ? 'completed' : 'pending',
+            status: 'confirmed',
             estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
         });
 
-        for (const item of cart.items) {
-            await Product.findByIdAndUpdate(item.product._id, { $inc: { stock: -item.quantity } });
+        const mongoose = require('mongoose');
+        for (const item of items) {
+            if (item.product && mongoose.Types.ObjectId.isValid(item.product)) {
+                await Product.findByIdAndUpdate(item.product, { $inc: { stock: -item.quantity } }).catch(() => {});
+            }
         }
 
-        await Cart.findOneAndUpdate({ user: userId }, { items: [], coupon: null, couponDiscount: 0 });
+        try {
+            const pdfBuffer = await invoiceService.generateInvoice(order, user);
+            await sendEmail({
+                email: user.email,
+                subject: `Order Confirmation - ${order.orderNumber}`,
+                message: `Thank you for your order, ${user.name}!\n\nYour order ${order.orderNumber} has been placed successfully. Please find your invoice attached.`,
+                attachments: [
+                    {
+                        filename: `Invoice_${order.orderNumber}.pdf`,
+                        content: pdfBuffer,
+                        contentType: 'application/pdf'
+                    }
+                ]
+            });
+        } catch (err) {
+            console.error('Invoice/Email error:', err);
+        }
+
         return order;
     }
 

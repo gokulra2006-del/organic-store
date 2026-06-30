@@ -1,8 +1,8 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useCart } from "../context/CartContext";
-import { products } from "../data/products";
+import { useProducts } from "../context/ProductContext";
 
 /* ─── Page ─────────────────────────────────────────────────── */
 
@@ -389,6 +389,7 @@ function Stars({ r }) {
 
 /* ─── Component ────────────────────────────────────────────── */
 export default function ProductDetail() {
+  const { products } = useProducts();
   const { id } = useParams();
   const product = products.find(p => p.id === Number(id));
   const [qty, setQty] = useState(1);

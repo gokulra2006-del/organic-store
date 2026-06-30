@@ -53,8 +53,31 @@ const requireRole = (...roles) => {
     };
 };
 
+const optionalAuth = async (req, res, next) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+        token = req.cookies.token;
+    }
+
+    if (!token) {
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-chars-long');
+        const user = await User.findById(decoded.id);
+        if (user) req.user = user;
+    } catch (error) {
+        // invalid token, just continue as guest
+    }
+    next();
+};
+
 module.exports = {
     verifyToken,
-    protect: verifyToken, // backward compatibility
-    requireRole
+    protect: verifyToken,
+    requireRole,
+    optionalAuth
 };

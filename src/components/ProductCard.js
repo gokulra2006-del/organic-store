@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { FaEye, FaShoppingCart, FaHeart, FaStar, FaCheck, FaPlus, FaMinus } from "react-icons/fa";
@@ -301,10 +301,10 @@ export default function ProductCard({ product }) {
         </RatingRow>
 
         <PriceRow>
-          <Price>${product.price.toFixed(2)}</Price>
+          <Price>₹{product.price.toFixed(2)}</Price>
           {product.originalPrice && (
             <>
-              <OldPrice>${product.originalPrice.toFixed(2)}</OldPrice>
+              <OldPrice>₹{product.originalPrice.toFixed(2)}</OldPrice>
               {discount > 0 && <Discount>-{discount}%</Discount>}
             </>
           )}

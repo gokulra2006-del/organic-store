@@ -1,19 +1,28 @@
 const nodemailer = require('nodemailer');
 
+const mailUser = process.env.SMTP_USER || process.env.EMAIL_USER || 'your-email@gmail.com';
+const mailPass = process.env.SMTP_PASS || process.env.EMAIL_PASS || 'your-app-password';
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        user: mailUser,
+        pass: mailPass
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
 const sendEmail = async (options) => {
     const mailOptions = {
-        from: `"Organic Store" <${process.env.EMAIL_USER}>`,
+        from: `"${process.env.SMTP_FROM_NAME || 'Organic Store'}" <${process.env.SMTP_FROM_EMAIL || mailUser}>`,
         to: options.to,
         subject: options.subject,
-        html: options.html
+        html: options.html,
+        text: options.text
     };
 
     await transporter.sendMail(mailOptions);

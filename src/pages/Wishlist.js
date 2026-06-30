@@ -275,9 +275,9 @@ export default function Wishlist() {
                 <Category>{product.category}</Category>
                 <Name to={`/product/${product.id}`}>{product.name}</Name>
                 <PriceRow>
-                  <Price>${product.price.toFixed(2)}</Price>
+                  <Price>₹{product.price.toFixed(2)}</Price>
                   {product.originalPrice && (
-                    <OldPrice>${product.originalPrice.toFixed(2)}</OldPrice>
+                    <OldPrice>₹{product.originalPrice.toFixed(2)}</OldPrice>
                   )}
                 </PriceRow>
                 <AddBtn onClick={() => addToCart(product, 1)}>

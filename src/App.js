@@ -1,10 +1,13 @@
-﻿import React from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { AuthProvider } from "./context/AuthContext";
 import { OrderProvider } from './context/OrderContext';
 import { AdminProvider } from "./context/AdminContext";
+import { ProductProvider } from "./context/ProductContext";
+import { ReviewProvider } from "./context/ReviewContext";
+import { ContentProvider } from "./context/ContentContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/admin/AdminRoute";
 import Header from "./components/Header";
@@ -20,9 +23,13 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import ProductDetail from "./pages/ProductDetail";
 import Checkout from "./pages/Checkout";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Wishlist from "./pages/Wishlist";
 import Account from "./pages/Account";
+import Recipes from "./pages/Recipes";
+import Reviews from "./pages/Reviews";
 
 // Admin pages
 import AdminLogin from "./pages/AdminLogin";
@@ -39,9 +46,11 @@ import AdminSettings from "./pages/admin/AdminSettings";
 
 import { useAuth } from "./context/AuthContext";
 
+import BottomNavbar from "./components/BottomNavbar";
+
 function Storefront() {
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white pb-16 lg:pb-0">
       <Header />
       <main className="flex-1">
         <Routes>
@@ -51,15 +60,20 @@ function Storefront() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/recipes" element={<Recipes />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />
-      <ChatWidget /> {/* ← ADD THIS LINE — inside the div, before closing tag */}
+      <BottomNavbar />
+      <ChatWidget />
     </div>
   );
 }
@@ -85,28 +99,34 @@ function AdminShell() {
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <OrderProvider>
-            <AdminProvider>
-              <Routes>
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route
-                  path="/admin/*"
-                  element={
-                    <AdminRoute>
-                      <AdminShell />
-                    </AdminRoute>
-                  }
-                />
-                <Route path="/*" element={<Storefront />} />
-              </Routes>
-            </AdminProvider>
-          </OrderProvider>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+    <ProductProvider>
+      <ReviewProvider>
+        <ContentProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <OrderProvider>
+                  <AdminProvider>
+                    <Routes>
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route
+                        path="/admin/*"
+                        element={
+                          <AdminRoute>
+                            <AdminShell />
+                          </AdminRoute>
+                        }
+                      />
+                      <Route path="/*" element={<Storefront />} />
+                    </Routes>
+                  </AdminProvider>
+                </OrderProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ContentProvider>
+      </ReviewProvider>
+    </ProductProvider>
   );
 }
 

@@ -1,17 +1,89 @@
 import React, { useState, useEffect, useRef } from "react";
-import { MessageSquare, X, Send, Leaf } from "lucide-react";
+import { Bot, X, Send, Leaf, ShoppingCart, Heart, ArrowRight, Mic, MicOff } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../context/CartContext";
+import { useWishlist } from "../../context/WishlistContext";
+import { useProducts } from "../../context/ProductContext";
 
 export default function ChatWidget() {
+  const { visibleProducts: products } = useProducts();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "Hi there! 🌿 Welcome to Organic Store. How can I help you today?" }
+    {
+      sender: "bot",
+      text: "Hi there! 🌿 I am your AI Store Assistant. I can help you find products, add them to your cart or wishlist, clear your cart, navigate around the store, or place an order! Try typing something like 'add 2 apples to cart' or 'do you have honey?'."
+    }
   ]);
   const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [pendingProduct, setPendingProduct] = useState(null);
   const messagesEndRef = useRef(null);
+
+  const navigate = useNavigate();
+  const { cart, items, addToCart, removeFromCart, clearCart, placeOrder, total } = useCart();
+  const { toggleWishlist, isWishlisted, clearWishlist } = useWishlist();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isTyping]);
+
+  const findProduct = (nameQuery) => {
+    if (!nameQuery) return null;
+    const query = nameQuery.toLowerCase().trim();
+    // Try exact match first
+    let match = products.find((p) => p.name.toLowerCase() === query);
+    if (match) return match;
+    // Try starts with
+    match = products.find((p) => p.name.toLowerCase().startsWith(query));
+    if (match) return match;
+    // Try contains
+    match = products.find((p) => p.name.toLowerCase().includes(query));
+    if (match) return match;
+    // Try checking if query contains product name
+    match = products.find((p) => query.includes(p.name.toLowerCase()));
+    return match;
+  };
+
+  const handleListen = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Voice input is not supported in this browser. Please try Chrome or Safari!");
+      return;
+    }
+
+    if (isListening) {
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onerror = (e) => {
+      console.error(e);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      setIsListening(false);
+      handleSend(transcript);
+    };
+
+    recognition.start();
+  };
 
   const handleSend = (textToSend) => {
     const msgText = textToSend || input;
@@ -21,39 +93,442 @@ export default function ChatWidget() {
     setMessages((prev) => [...prev, { sender: "user", text: msgText }]);
     if (!textToSend) setInput("");
 
-    // Simulate bot response
+    setIsTyping(true);
+
+    // Simulate bot parsing after a brief timeout
     setTimeout(() => {
-      let reply = "I am a simple virtual assistant. If you want to track your order, please log into your Account page.";
-      const lower = msgText.toLowerCase();
-      if (lower.includes("order") || lower.includes("track")) {
-        reply = "You can view your order tracking details directly on the Orders tab of your Account workspace! 📦";
-      } else if (lower.includes("delivery") || lower.includes("shipping")) {
-        reply = "We offer lightning fast 10-minute delivery for all locations within our service zones! 🛵 Delivery is free for orders over $30.";
-      } else if (lower.includes("fresh") || lower.includes("organic") || lower.includes("source")) {
-        reply = "All our produce is sourced from local, certified organic farms close to the communities we serve. Picked fresh every morning! ☀️";
-      } else if (lower.includes("human") || lower.includes("agent") || lower.includes("support")) {
-        reply = "Connecting you to a support specialist... Actually, they're currently offline, but you can leave a note at our Contact Us page! ✉️";
+      setIsTyping(false);
+      const lower = msgText.toLowerCase().trim();
+
+      // Check if we have a pending product request awaiting quantity selection
+      if (pendingProduct) {
+        if (lower === "cancel" || lower.includes("cancel")) {
+          setPendingProduct(null);
+          return setMessages((prev) => [
+            ...prev,
+            {
+              sender: "bot",
+              text: "Cancelled add to cart. Let me know if you need anything else! 😊"
+            }
+          ]);
+        }
+        const qty = parseInt(lower, 10);
+        if (!isNaN(qty) && qty > 0) {
+          const product = pendingProduct;
+          addToCart(product, qty);
+          setPendingProduct(null);
+          return setMessages((prev) => [
+            ...prev,
+            {
+              sender: "bot",
+              text: `Successfully added ${qty}x **${product.name}** (₹${product.price.toFixed(2)} each) to your cart! 🛒`,
+              actions: [
+                { label: "Add More ➕", action: `add ${qty} ${product.name} to cart` },
+                { label: "View Cart 🛒", action: "go to cart" },
+                { label: "Checkout 💳", action: "go to checkout" }
+              ]
+            }
+          ]);
+        }
+        // If they entered something else, cancel pending product and handle as a normal command
+        setPendingProduct(null);
       }
 
-      setMessages((prev) => [...prev, { sender: "bot", text: reply }]);
-    }, 800);
+      // 1. Navigation Page Commands
+      if (
+        lower === "cart" ||
+        lower === "go to cart" ||
+        lower === "show cart" ||
+        lower === "view cart"
+      ) {
+        navigate("/cart");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Opening your shopping cart! 🛒" }
+        ]);
+      }
+      if (
+        lower === "checkout" ||
+        lower === "go to checkout" ||
+        lower === "proceed to checkout"
+      ) {
+        navigate("/checkout");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Proceeding to checkout page! 💳" }
+        ]);
+      }
+      if (
+        lower === "wishlist" ||
+        lower === "go to wishlist" ||
+        lower === "show wishlist" ||
+        lower === "view wishlist"
+      ) {
+        navigate("/wishlist");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Showing your wishlist! ❤️" }
+        ]);
+      }
+      if (
+        lower === "shop" ||
+        lower === "go to shop" ||
+        lower === "show products" ||
+        lower === "store" ||
+        lower === "browse"
+      ) {
+        navigate("/shop");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Navigating to our shop. Browse our fresh products! 🌾" }
+        ]);
+      }
+      if (
+        lower === "recipes" ||
+        lower === "go to recipes" ||
+        lower === "show recipes"
+      ) {
+        navigate("/recipes");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Opening our healthy recipes page! 🥗" }
+        ]);
+      }
+      if (
+        lower === "account" ||
+        lower === "go to account" ||
+        lower === "show orders" ||
+        lower === "orders"
+      ) {
+        navigate("/account");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Going to your Account & Order history page. 📦" }
+        ]);
+      }
+
+      // 2. Checkout / Place Order Direct Command
+      if (
+        lower === "place order" ||
+        lower === "buy all" ||
+        lower === "complete order" ||
+        lower === "place my order"
+      ) {
+        const cartItems = items || cart || [];
+        if (cartItems.length === 0) {
+          return setMessages((prev) => [
+            ...prev,
+            {
+              sender: "bot",
+              text: "Your cart is empty. Please add some products before checking out! 🛍️"
+            }
+          ]);
+        }
+        placeOrder(total);
+        navigate("/account");
+        return setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: `✓ Order placed successfully! Thank you for shopping with Organic Store. Your total is ₹${total.toFixed(
+              2
+            )}. I've navigated you to your Account page to track your order. 📦`
+          }
+        ]);
+      }
+
+      // 3. Clear Cart / Wishlist
+      if (lower === "clear cart" || lower === "empty cart") {
+        clearCart();
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Your shopping cart has been cleared! 🛒" }
+        ]);
+      }
+      if (lower === "clear wishlist" || lower === "empty wishlist") {
+        clearWishlist();
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Your wishlist has been cleared! ❤️" }
+        ]);
+      }
+
+      // 4. Wishlist add command
+      let wishlistMatch =
+        lower.match(/^(?:add\s+)?(.*?)\s+to\s+wishlist$/i) ||
+        lower.match(/^wishlist\s+(.*?)$/i) ||
+        lower.match(/^save\s+(.*?)\s+to\s+wishlist$/i);
+      if (wishlistMatch) {
+        const prodName = wishlistMatch[1].trim();
+        if (prodName && prodName !== "page" && prodName !== "show") {
+          const product = findProduct(prodName);
+          if (product) {
+            if (!isWishlisted(product.id)) {
+              toggleWishlist(product);
+            }
+            return setMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: `Added **${product.name}** to your wishlist! ❤️`,
+                actions: [{ label: "View Wishlist", action: "go to wishlist" }]
+              }
+            ]);
+          }
+        }
+      }
+
+      // 5. Remove from Cart command
+      let removeMatch =
+        lower.match(/^(?:remove|delete|discard)\s+(.*?)(?:\s+from\s+cart)?$/i);
+      if (removeMatch) {
+        const prodName = removeMatch[1].trim();
+        if (prodName) {
+          const cartItemsList = items || cart || [];
+          const cartProduct = cartItemsList.find(
+            (item) =>
+              item.name.toLowerCase().includes(prodName) ||
+              prodName.includes(item.name.toLowerCase())
+          );
+          if (cartProduct) {
+            removeFromCart(cartProduct.id);
+            return setMessages((prev) => [
+              ...prev,
+              { sender: "bot", text: `Removed **${cartProduct.name}** from your cart. 🗑` }
+            ]);
+          } else {
+            return setMessages((prev) => [
+              ...prev,
+              { sender: "bot", text: `I couldn't find "${prodName}" in your cart.` }
+            ]);
+          }
+        }
+      }
+
+      // 6. Add to Cart / Order action
+      let addMatch = lower.match(
+        /^(?:add|buy|order)\s+(?:(\d+)\s+)?(.*?)(?:\s+to\s+cart)?$/i
+      );
+      if (addMatch) {
+        // eslint-disable-next-line no-unused-vars
+        const quantity = addMatch[1] ? parseInt(addMatch[1], 10) : 1;
+        const prodName = addMatch[2].trim();
+
+        if (
+          prodName &&
+          prodName !== "cart" &&
+          prodName !== "wishlist" &&
+          prodName !== "page" &&
+          prodName !== "order" &&
+          prodName !== "checkout"
+        ) {
+          const product = findProduct(prodName);
+          if (product) {
+            setPendingProduct(product);
+            return setMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: `🌿 **Product Details for ${product.name}:**\n• **Price:** ₹${product.price.toFixed(2)}\n• **Category:** ${product.category}\n• **Weight:** ${product.weight || "N/A"}\n• **Rating:** ⭐ ${product.rating} (${product.reviews} reviews)\n• **Description:** ${product.description}\n• **Tags:** ${product.tags ? product.tags.join(", ") : "None"}\n\n**How many would you like to add to your cart?** Please select or enter a quantity below:`,
+                actions: [
+                  { label: "1", action: "1" },
+                  { label: "2", action: "2" },
+                  { label: "3", action: "3" },
+                  { label: "5", action: "5" },
+                  { label: "Cancel ❌", action: "cancel" }
+                ]
+              }
+            ]);
+          } else {
+            const suggestions = products
+              .filter(
+                (p) =>
+                  p.name.toLowerCase().includes(prodName.split(" ")[0]) ||
+                  p.category.toLowerCase().includes(prodName)
+              )
+              .slice(0, 3);
+            return setMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: `Sorry, I couldn't find a product matching "${prodName}". Did you mean one of these?`,
+                products: suggestions.length > 0 ? suggestions : products.slice(0, 3)
+              }
+            ]);
+          }
+        }
+      }
+
+      // 6.5 Product Details / Info Command
+      let detailsMatch = lower.match(/^(?:details\s+of|info\s+about|about|tell\s+me\s+about|show\s+details\s+for|view\s+details\s+for)\s+(.*?)$/i);
+      if (detailsMatch) {
+        const prodName = detailsMatch[1].trim();
+        if (prodName) {
+          const product = findProduct(prodName);
+          if (product) {
+            return setMessages((prev) => [
+              ...prev,
+              {
+                sender: "bot",
+                text: `🌿 **Product Details for ${product.name}:**\n• **Price:** ₹${product.price.toFixed(2)}\n• **Category:** ${product.category}\n• **Weight:** ${product.weight || "N/A"}\n• **Rating:** ⭐ ${product.rating} (${product.reviews} reviews)\n• **Description:** ${product.description}\n• **Tags:** ${product.tags ? product.tags.join(", ") : "None"}`,
+                actions: [
+                  { label: `Add to Cart 🛒`, action: `add ${product.name} to cart` },
+                  { label: "View Cart 🛒", action: "go to cart" }
+                ]
+              }
+            ]);
+          }
+        }
+      }
+
+      // 7. Search / Enquiry
+      if (
+        lower.includes("search") ||
+        lower.includes("find") ||
+        lower.includes("do you have") ||
+        lower.includes("show me") ||
+        lower.includes("looking for") ||
+        lower.startsWith("have ")
+      ) {
+        const query = lower
+          .replace(/^(search|find|do you have|show me|looking for|have)\s+/, "")
+          .trim();
+        const matched = products.filter(
+          (p) =>
+            p.name.toLowerCase().includes(query) ||
+            p.category.toLowerCase().includes(query) ||
+            p.tags.some((t) => t.toLowerCase().includes(query))
+        );
+        if (matched.length > 0) {
+          return setMessages((prev) => [
+            ...prev,
+            {
+              sender: "bot",
+              text: `Here is what I found for "${query}":`,
+              products: matched.slice(0, 3)
+            }
+          ]);
+        } else {
+          return setMessages((prev) => [
+            ...prev,
+            {
+              sender: "bot",
+              text: `I couldn't find any products matching "${query}". Try searching for fruits, vegetables, or herbs! 🥕`
+            }
+          ]);
+        }
+      }
+
+      // 8. New pages navigation
+      if (lower === "go to reviews page direct") {
+        navigate("/reviews");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Opening the Customer Reviews page! 💬" }
+        ]);
+      }
+      if (lower === "cancel reviews redirection") {
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "No problem! Let me know if there's anything else I can help you with. 😊" }
+        ]);
+      }
+      if (lower.includes("review") || lower.includes("testimonial")) {
+        return setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: "Would you like me to take you to the Customer Reviews section?",
+            actions: [
+              { label: "Yes, take me there! 👍", action: "go to reviews page direct" },
+              { label: "No, thank you ❌", action: "cancel reviews redirection" }
+            ]
+          }
+        ]);
+      }
+      if (
+        lower.includes("list product") ||
+        lower.includes("show products") ||
+        lower.includes("what products") ||
+        lower.includes("what do you have") ||
+        lower.includes("all products") ||
+        lower.includes("list the products") ||
+        lower.includes("available products") ||
+        lower.includes("what items")
+      ) {
+        const prodList = products.map(p => `• **${p.name}** (₹${p.price.toFixed(2)})`).join("\n");
+        return setMessages((prev) => [
+          ...prev,
+          {
+            sender: "bot",
+            text: `🌿 **Here are the fresh organic products available at Organic Store:**\n\n${prodList}\n\nWhich one would you like to know more about or add to your cart?`,
+            products: products.slice(0, 6)
+          }
+        ]);
+      }
+      if (lower.includes("about") || lower.includes("story") || lower.includes("promise") || lower.includes("who are you")) {
+        navigate("/about");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Opening our About Us page to learn more about our organic farm-to-door promise! 🌿" }
+        ]);
+      }
+      if (lower.includes("contact") || lower.includes("support") || lower.includes("help") || lower.includes("reach out") || lower.includes("email") || lower.includes("phone") || lower.includes("call")) {
+        navigate("/contact");
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "Opening our Contact Us page. We're here to help! 📞" }
+        ]);
+      }
+
+      // 9. FAQ / Smart Answers
+      if (lower.includes("delivery") || lower.includes("how fast") || lower.includes("time")) {
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "🚚 **Delivery Promise:** We deliver fresh organic produce to your neighborhood in **10 minutes**! Operating hours are 7am – 11pm." }
+        ]);
+      }
+      if (lower.includes("refund") || lower.includes("return") || lower.includes("guarantee")) {
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "🛡️ **Freshness Guarantee:** We guarantee the freshness of all items. If you are not satisfied, we offer easy, no-questions-asked refunds!" }
+        ]);
+      }
+      if (lower.includes("payment") || lower.includes("pay") || lower.includes("razorpay")) {
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "💳 **Secure Payments:** We support cards, UPI, and net banking using fully integrated, secure Razorpay checkout." }
+        ]);
+      }
+      if (lower.includes("admin") || lower.includes("portal") || lower.includes("dashboard")) {
+        return setMessages((prev) => [
+          ...prev,
+          { sender: "bot", text: "⚙️ **Admin Access:** You can access the Admin Center dashboard by navigating to `/admin/login` or choosing it from the profile menu." }
+        ]);
+      }
+
+      // Default Response
+      let reply =
+        "I didn't quite catch that. You can say things like:\n• 'add Apple to cart'\n• 'go to checkout'\n• 'search honey'\n• 'clear cart'\n• 'wishlist bananas'";
+      return setMessages((prev) => [...prev, { sender: "bot", text: reply }]);
+    }, 1000);
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 font-sans">
+    <div className="fixed bottom-20 lg:bottom-6 right-6 z-50 font-sans">
       {/* Trigger Button */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-[#153d2b] text-white shadow-xl hover:bg-emerald-800 hover:scale-105 active:scale-95 transition-all duration-250 cursor-pointer"
         >
-          <MessageSquare size={24} />
+          <Bot size={24} />
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="w-[340px] sm:w-[380px] h-[480px] rounded-3xl border border-stone-200 bg-white shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="w-[340px] sm:w-[380px] h-[520px] rounded-3xl border border-stone-200 bg-white shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
           {/* Header */}
           <div className="bg-[#153d2b] px-5 py-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -61,8 +536,8 @@ export default function ChatWidget() {
                 <Leaf size={16} className="text-lime-300" />
               </span>
               <div>
-                <h3 className="font-extrabold text-sm leading-none">Organic Standard</h3>
-                <p className="text-[10px] text-emerald-200/80 font-bold mt-1">Virtual Assistant</p>
+                <h3 className="font-extrabold text-sm leading-none">Organic Store AI</h3>
+                <p className="text-[10px] text-emerald-200/80 font-bold mt-1">Smart Assistant</p>
               </div>
             </div>
             <button
@@ -78,25 +553,128 @@ export default function ChatWidget() {
             {messages.map((msg, index) => (
               <div
                 key={index}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
               >
                 <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-xs font-bold leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs font-bold leading-relaxed whitespace-pre-line ${
                     msg.sender === "user"
                       ? "bg-[#153d2b] text-white"
                       : "bg-stone-100 text-stone-800"
                   }`}
                 >
                   {msg.text}
+
+                  {/* Inline product cards (for search results/suggestions) */}
+                  {msg.products && msg.products.length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      {msg.products.map((prod) => (
+                        <div
+                          key={prod.id}
+                          className="flex items-center gap-2.5 p-2 bg-white border border-stone-200 rounded-xl"
+                        >
+                          <img
+                            src={prod.image}
+                            alt={prod.name}
+                            className="w-10 h-10 object-cover rounded-lg shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-black text-stone-900 truncate">
+                              {prod.name}
+                            </p>
+                            <p className="text-[10px] text-emerald-700 font-bold">
+                              ₹{prod.price.toFixed(2)}
+                            </p>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                setPendingProduct(prod);
+                                setMessages((prev) => [
+                                  ...prev,
+                                  {
+                                    sender: "bot",
+                                    text: `🌿 **Product Details for ${prod.name}:**\n• **Price:** ₹${prod.price.toFixed(2)}\n• **Category:** ${prod.category}\n• **Weight:** ${prod.weight || "N/A"}\n• **Rating:** ⭐ ${prod.rating} (${prod.reviews} reviews)\n• **Description:** ${prod.description}\n• **Tags:** ${prod.tags ? prod.tags.join(", ") : "None"}\n\n**How many would you like to add to your cart?** Please select or enter a quantity:`,
+                                    actions: [
+                                      { label: "1", action: "1" },
+                                      { label: "2", action: "2" },
+                                      { label: "3", action: "3" },
+                                      { label: "5", action: "5" },
+                                      { label: "Cancel ❌", action: "cancel" }
+                                    ]
+                                  }
+                                ]);
+                              }}
+                              className="p-1.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-600 hover:text-white rounded-lg transition"
+                              title="Add to cart"
+                            >
+                              <ShoppingCart size={13} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (!isWishlisted(prod.id)) {
+                                  toggleWishlist(prod);
+                                }
+                                setMessages((prev) => [
+                                  ...prev,
+                                  {
+                                    sender: "bot",
+                                    text: `Added **${prod.name}** to wishlist! ❤️`,
+                                    actions: [{ label: "View Wishlist", action: "go to wishlist" }]
+                                  }
+                                ]);
+                              }}
+                              className="p-1.5 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white rounded-lg transition"
+                              title="Add to wishlist"
+                            >
+                              <Heart
+                                size={13}
+                                className={isWishlisted(prod.id) ? "fill-current" : ""}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Inline quick action buttons */}
+                  {msg.actions && msg.actions.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {msg.actions.map((act, actIdx) => (
+                        <button
+                          key={actIdx}
+                          onClick={() => handleSend(act.action)}
+                          className="bg-white border border-stone-200 text-[#153d2b] hover:bg-emerald-50 rounded-lg px-2.5 py-1 text-[10px] font-black transition flex items-center gap-1 shadow-sm"
+                        >
+                          {act.label} <ArrowRight size={10} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
+
+            {/* Typing Indicator */}
+            {isTyping && (
+              <div className="flex justify-start items-center">
+                <div className="bg-stone-100 rounded-2xl px-4 py-3 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                  <span className="w-1.5 h-1.5 bg-stone-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick replies */}
+          {/* Quick suggestions chips */}
           <div className="p-3 bg-white border-t border-stone-100 flex gap-1.5 overflow-x-auto scrollbar-none shrink-0">
-            {["Track order", "Delivery zones", "Talk to agent"].map((q) => (
+            {(items.length > 0
+              ? ["checkout", "place order", "clear cart", "do you have honey?"]
+              : ["add honey to cart", "do you have fruits?", "go to shop", "show recipes"]
+            ).map((q) => (
               <button
                 key={q}
                 onClick={() => handleSend(q)}
@@ -109,14 +687,32 @@ export default function ChatWidget() {
 
           {/* Input Area */}
           <form
-            onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSend();
+            }}
             className="p-3 border-t border-stone-200 bg-white flex items-center gap-2"
           >
+            {/* Speech microphone button */}
+            <button
+              type="button"
+              onClick={handleListen}
+              className={`h-10 w-10 flex items-center justify-center rounded-xl transition active:scale-95 shrink-0 ${
+                isListening
+                  ? "bg-rose-500 text-white animate-pulse"
+                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              }`}
+              title={isListening ? "Listening..." : "Voice input"}
+            >
+              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+            </button>
+
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Write a message..."
+              placeholder={isListening ? "Listening..." : "Type a command (e.g. 'order spinach')..."}
+              disabled={isListening}
               className="flex-1 min-h-10 px-4 rounded-xl border border-stone-200 bg-stone-50 outline-none text-xs font-bold transition focus:border-emerald-500 focus:bg-white"
             />
             <button

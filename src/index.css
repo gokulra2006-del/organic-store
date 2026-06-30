@@ -145,3 +145,13 @@
   ::-webkit-scrollbar-thumb { background: #22c55e; border-radius: 5px; }
   ::-webkit-scrollbar-thumb:hover { background: #16a34a; }
 }
+
+/* Prevent autofill style highlighter override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #1c1917 !important;
+  transition: background-color 600000s ease-in-out 0s, color 600000s ease-in-out 0s;
+}

@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "predev": "node -e \"const { execSync } = require('child_process'); try { const stdout = execSync('netstat -ano'); const line = stdout.toString().split('\\n').find(l => l.includes(':5000') && l.includes('LISTENING')); if (line) { const pid = line.trim().split(/\\s+/).pop(); if (pid && pid !== '0') { process.kill(pid, 'SIGKILL'); console.log('🌿 Predev: Released port 5000 (killed zombie PID ' + pid + ')'); } } } catch (e) {}\"",
     "dev": "nodemon server.js"
   },
   "dependencies": {
@@ -25,6 +26,8 @@
     "morgan": "^1.11.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.1",
+    "pdfkit": "^0.19.1",
+    "razorpay": "^2.9.6",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const emailService = require('../services/email.service');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-chars-long';
 
@@ -45,6 +46,11 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email address is already registered' });
         }
 
+        const existingPhone = await User.findOne({ phone });
+        if (existingPhone) {
+            return res.status(400).json({ success: false, message: 'Phone number is already registered' });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const otpCode = generateOTP();
         const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -62,6 +68,13 @@ router.post('/register', async (req, res) => {
         });
 
         console.log(`🔑 Verification code for registration (${email}): ${otpCode}`);
+
+        // Send OTP email
+        try {
+            await emailService.sendOTPEmail(email, otpCode, 'registration');
+        } catch (emailErr) {
+            console.error(`✉️ Failed to send registration OTP email to ${email}:`, emailErr.message);
+        }
 
         res.status(201).json({
             success: true,
@@ -165,6 +178,13 @@ router.post('/login', async (req, res) => {
 
         console.log(`🔑 Login verification code for (${email}): ${otpCode}`);
 
+        // Send OTP email
+        try {
+            await emailService.sendOTPEmail(email, otpCode, 'login');
+        } catch (emailErr) {
+            console.error(`✉️ Failed to send login OTP email to ${email}:`, emailErr.message);
+        }
+
         res.status(200).json({
             success: true,
             data: {
@@ -256,6 +276,13 @@ router.post('/resend-otp', async (req, res) => {
 
         console.log(`🔑 Resent OTP for (${email}) for [${purpose || 'auth'}]: ${otpCode}`);
 
+        // Send OTP email
+        try {
+            await emailService.sendOTPEmail(email, otpCode, purpose || 'registration');
+        } catch (emailErr) {
+            console.error(`✉️ Failed to send resent OTP email to ${email}:`, emailErr.message);
+        }
+
         res.status(200).json({
             success: true,
             message: 'A new security code has been sent'
@@ -290,6 +317,13 @@ router.post('/forgot-password', async (req, res) => {
         await user.save();
 
         console.log(`🔑 Password reset verification code for (${email}): ${otpCode}`);
+
+        // Send OTP email
+        try {
+            await emailService.sendOTPEmail(email, otpCode, 'password_reset');
+        } catch (emailErr) {
+            console.error(`✉️ Failed to send password reset OTP email to ${email}:`, emailErr.message);
+        }
 
         res.status(200).json({
             success: true,
@@ -422,6 +456,47 @@ router.get('/me', async (req, res) => {
         });
     } catch {
         res.status(401).json({ success: false, message: 'Invalid or expired session token' });
+    }
+});
+
+// ── 11. UPDATE PROFILE ────────────────────────────────────────────
+router.put('/update-profile', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        const token = authHeader && authHeader.split(' ')[1];
+
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'No authorization token' });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { name, phone } = req.body;
+
+        const user = await User.findByIdAndUpdate(
+            decoded.id,
+            { ...(name && { name }), ...(phone && { phone }) },
+            { new: true, runValidators: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role,
+                isVerified: user.isVerified
+            },
+            message: 'Profile updated successfully'
+        });
+    } catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 

@@ -46,6 +46,7 @@ const Content = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 28px;
+  align-items: start;
 
   @media (min-width: 900px) {
     grid-template-columns: 1fr 1fr;
@@ -56,6 +57,12 @@ const Content = styled.div`
 const ContactInfo = styled.div`
   display: grid;
   gap: 16px;
+  position: sticky;
+  top: 110px;
+  @media (max-width: 900px) {
+    position: relative;
+    top: 0;
+  }
 `;
 
 const InfoCard = styled.div`

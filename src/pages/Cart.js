@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaShoppingCart, FaArrowRight } from 'react-icons/fa';
@@ -269,7 +269,7 @@ export default function Cart() {
                       </div>
                     </div>
                   </Td>
-                  <Td style={{ whiteSpace: 'nowrap' }}>${Number(item.price).toFixed(2)}</Td>
+                  <Td style={{ whiteSpace: 'nowrap' }}>₹{Number(item.price).toFixed(2)}</Td>
                   <Td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <QuantityButton onClick={() => updateQuantity(item.id, item.quantity - 1)}>−</QuantityButton>
@@ -280,7 +280,7 @@ export default function Cart() {
                     </div>
                   </Td>
                   <Td style={{ fontWeight: 700, color: '#16a34a', whiteSpace: 'nowrap' }}>
-                    ${(Number(item.price) * item.quantity).toFixed(2)}
+                    ₹{(Number(item.price) * item.quantity).toFixed(2)}
                   </Td>
                   <Td>
                     <RemoveButton onClick={() => removeItem(item.id)}>Remove</RemoveButton>
@@ -297,15 +297,15 @@ export default function Cart() {
 
           <SummaryLine>
             <span>Subtotal</span>
-            <span>${Number(subtotal).toFixed(2)}</span>
+            <span>₹{Number(subtotal).toFixed(2)}</span>
           </SummaryLine>
           <SummaryLine style={{ fontWeight: 500, color: '#64748b', borderBottom: '1px solid rgba(186,247,208,0.4)' }}>
             <span>Shipping</span>
-            <span>$5.00</span>
+            <span>₹5.00</span>
           </SummaryLine>
           <SummaryLine>
             <span>Total</span>
-            <span>${(Number(subtotal) + 5).toFixed(2)}</span>
+            <span>₹{(Number(subtotal) + 5).toFixed(2)}</span>
           </SummaryLine>
 
           <CheckoutButton to="/checkout">

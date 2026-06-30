@@ -1,4 +1,4 @@
-const transporter = require('../config/nodemailer');
+const { transporter } = require('../config/nodemailer');
 const logger = require('../utils/logger');
 
 class EmailService {

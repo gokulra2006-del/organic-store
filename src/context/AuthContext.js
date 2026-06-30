@@ -6,16 +6,24 @@ const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/v1'
 
 // Central fetch wrapper — sends httpOnly cookies, parses your ApiResponse shape
 async function apiCall(endpoint, options = {}) {
+  // Attach bearer token if stored locally (for routes that need it)
+  const stored = localStorage.getItem('organic_user');
+  let token = null;
+  try { token = stored ? JSON.parse(stored).token : null; } catch {}
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
-    credentials: 'include', // required: backend sets httpOnly cookies
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
     ...options,
   });
 
   const body = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    // ApiError shape from backend: { success:false, message, statusCode }
     const message = body.message || `Request failed (${res.status})`;
     const error = new Error(message);
     error.statusCode = res.status;
@@ -117,6 +125,19 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  // ── Update Profile ──────────────────────────────────────────────
+  const updateProfile = useCallback(async ({ name, phone }) => {
+    const res = await apiCall('/auth/update-profile', {
+      method: 'PUT',
+      body: JSON.stringify({ name, phone }),
+    });
+    // Merge updated fields into persisted user
+    const updatedUser = { ...user, name: res.data?.name || name, phone: res.data?.phone || phone };
+    setUser(updatedUser);
+    localStorage.setItem('organic_user', JSON.stringify(updatedUser));
+    return res.data;
+  }, [user]);
+
   // ── Logout ──────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
@@ -135,6 +156,7 @@ export const AuthProvider = ({ children }) => {
       register, verifyRegistrationOtp,
       login, verifyLoginOtp, resendOtp,
       forgotPassword, verifyResetOtp, resetPassword,
+      updateProfile,
       logout,
     }}>
       {children}

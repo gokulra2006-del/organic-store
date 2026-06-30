@@ -5,7 +5,9 @@ import Hero from "../components/HeroSlider";
 import CategorySection from "../components/CategorySection";
 import ProductGrid from "../components/ProductGrid";
 import Newsletter from "../components/Newsletter";
-import { products } from "../data/products";
+import { useProducts } from "../context/ProductContext";
+import { useReviews } from "../context/ReviewContext";
+import { useContent } from "../context/ContentContext";
 
 const filters = [
   { label: "Popular", value: "all" },
@@ -21,20 +23,17 @@ const promises = [
   { icon: HeartHandshake, title: "Local farms first", text: "We prioritize growers close to the communities we serve." },
 ];
 
-const stories = [
-  { tag: "Kitchen notes", title: "Make leafy greens last all week", date: "5 min read", image: "https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&w=900&q=82" },
-  { tag: "Meet the grower", title: "Inside a regenerative family farm", date: "7 min read", image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=900&q=82" },
-  { tag: "Wellness", title: "Build a brighter everyday pantry", date: "4 min read", image: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=82" },
-];
-
 export default function Home() {
+  const { visibleProducts: products } = useProducts();
+  const { blogStories: stories } = useContent();
+  const { approvedReviews } = useReviews();
   const [filter, setFilter] = useState("all");
   const filteredProducts = useMemo(
     () =>
       filter === "all"
         ? products.slice(0, 8)
         : products.filter((p) => p.category === filter).slice(0, 8),
-    [filter]
+    [filter, products]
   );
 
   return (
@@ -161,20 +160,41 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Testimonial */}
-          <div className="flex flex-col justify-between rounded-[24px] bg-amber-100 p-6 sm:rounded-[30px] sm:p-7 sm:p-9">
-            <Quote size={32} className="text-amber-700/40 sm:text-[36px]" />
-            <blockquote className="my-6 font-sans text-xl font-black leading-snug tracking-tight text-stone-900 sm:my-8 sm:text-2xl sm:text-3xl">
-              "It feels like a farmer's market showed up at my door, only faster."
-            </blockquote>
-            <div>
-              <div className="flex gap-1 text-amber-500">
-                {[1, 2, 3, 4, 5].map((item) => (
-                  <Star key={item} size={16} fill="currentColor" />
-                ))}
-              </div>
-              <p className="mt-2 text-sm font-extrabold text-stone-900 sm:mt-3">Mark Antony</p>
-              <p className="mt-1 text-xs font-bold text-stone-500">Verified weekly customer</p>
+          {/* Customer Reviews Section */}
+          <div className="flex flex-col justify-between rounded-[24px] bg-amber-100 p-6 sm:rounded-[30px] sm:p-8 space-y-4">
+            <div className="flex items-center gap-2">
+              <Quote size={28} className="text-amber-700/40" />
+              <h3 className="text-xs font-black uppercase tracking-wider text-amber-800">Customer Testimonials</h3>
+            </div>
+            
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 scrollbar-none">
+              {approvedReviews.length > 0 ? (
+                approvedReviews.map((rev) => (
+                  <div key={rev.id} className="border-b border-amber-250/40 pb-4 last:border-b-0 last:pb-0">
+                    <p className="font-sans text-sm font-extrabold leading-snug tracking-tight text-stone-900 italic">
+                      "{rev.text}"
+                    </p>
+                    <div className="mt-2 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-black text-stone-950">{rev.author}</p>
+                        <p className="text-[10px] font-bold text-stone-500">Verified Customer</p>
+                      </div>
+                      <div className="flex gap-0.5 text-amber-500">
+                        {Array.from({ length: rev.rating }).map((_, i) => (
+                          <Star key={i} size={12} fill="currentColor" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div>
+                  <p className="font-sans text-sm font-extrabold leading-snug text-stone-600 italic">
+                    "It feels like a farmer's market showed up at my door, only faster."
+                  </p>
+                  <p className="mt-2 text-xs font-black text-stone-900">Mark Antony</p>
+                </div>
+              )}
             </div>
           </div>
         </section>

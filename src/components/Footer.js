@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebookF, FaTwitter, FaInstagram, FaPinterestP, FaLeaf, FaArrowRight } from 'react-icons/fa';
@@ -231,7 +231,9 @@ export default function Footer() {
           <LinkList>
             <LinkItem><FooterLink to="/">Home</FooterLink></LinkItem>
             <LinkItem><FooterLink to="/shop">Shop</FooterLink></LinkItem>
+            <LinkItem><FooterLink to="/recipes">Organic Recipes</FooterLink></LinkItem>
             <LinkItem><FooterLink to="/about">About Us</FooterLink></LinkItem>
+            <LinkItem><FooterLink to="/reviews">Customer Reviews</FooterLink></LinkItem>
             <LinkItem><FooterLink to="/contact">Contact</FooterLink></LinkItem>
             <LinkItem><FooterLink to="/cart">My Cart</FooterLink></LinkItem>
           </LinkList>

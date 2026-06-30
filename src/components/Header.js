@@ -19,7 +19,9 @@ import { useAuth } from "../context/AuthContext";
 const links = [
   { label: "Home", to: "/" },
   { label: "Shop", to: "/shop" },
+  { label: "Recipes", to: "/recipes" },
   { label: "About", to: "/about" },
+  { label: "Reviews", to: "/reviews" },
   { label: "Contact", to: "/contact" },
 ];
 
@@ -96,6 +98,20 @@ export default function Header() {
                 {link.label}
               </NavLink>
             ))}
+            {isLoggedIn && (
+              <NavLink
+                to="/account"
+                className={({ isActive }) =>
+                  `flex min-h-12 items-center rounded-xl px-4 text-sm font-bold transition ${
+                    isActive
+                      ? "bg-emerald-50 text-emerald-800"
+                      : "text-stone-600 hover:bg-stone-50 hover:text-emerald-800"
+                  }`
+                }
+              >
+                My Account
+              </NavLink>
+            )}
           </nav>
 
           {/* Search — desktop */}
@@ -219,62 +235,92 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu - premium slide-over drawer */}
         {menuOpen && (
-          <div className="border-t border-stone-100 pb-4 pt-3 lg:hidden">
-            {/* Search in menu on mobile */}
-            <form onSubmit={search} className="relative mb-3 md:hidden">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400"
-                size={18}
-              />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="h-12 w-full rounded-xl border border-stone-200 bg-stone-50 pl-11 pr-4 text-sm font-semibold outline-none"
-                placeholder="Search fresh groceries..."
-              />
-            </form>
-            <nav className="grid gap-1">
-              {links.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex min-h-12 items-center rounded-xl px-3 text-sm font-bold text-stone-700 hover:bg-emerald-50"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {/* Wishlist accessible from mobile menu */}
-              <Link
-                to="/wishlist"
-                onClick={() => setMenuOpen(false)}
-                className="flex min-h-12 items-center gap-2 rounded-xl px-3 text-sm font-bold text-stone-700 hover:bg-emerald-50"
-              >
-                <Heart size={16} /> Wishlist
-              </Link>
-              <Link
-                to={isLoggedIn ? (isAdmin ? "/admin" : "/account") : "/login"}
-                onClick={() => setMenuOpen(false)}
-                className="flex min-h-12 items-center rounded-xl px-3 text-sm font-bold text-emerald-800"
-              >
-                {isLoggedIn
-                  ? isAdmin
-                    ? "Admin dashboard"
-                    : "My account"
-                  : "Sign in / Register"}
-              </Link>
-              {isLoggedIn && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-xs lg:hidden"
+              onClick={() => setMenuOpen(false)}
+            />
+            {/* Drawer */}
+            <div className="fixed inset-y-0 right-0 z-50 w-[300px] bg-[#fbfcf9] shadow-2xl flex flex-col lg:hidden animate-in slide-in-from-right duration-250">
+              {/* Drawer Header */}
+              <div className="bg-[#153d2b] text-white px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white">
+                    <Leaf size={16} />
+                  </span>
+                  <span className="text-sm font-black tracking-tight">Organic Store</span>
+                </div>
                 <button
-                  onClick={() => { signOut(); setMenuOpen(false); }}
-                  className="flex min-h-12 items-center gap-2 rounded-xl px-3 text-left text-sm font-bold text-rose-600 hover:bg-rose-50"
+                  onClick={() => setMenuOpen(false)}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition"
                 >
-                  <LogOut size={16} /> Sign out
+                  <X size={18} />
                 </button>
-              )}
-            </nav>
-          </div>
+              </div>
+
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto p-5 flex flex-col justify-between">
+                <div className="space-y-6">
+                  {/* Search */}
+                  <form onSubmit={search} className="relative md:hidden">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={16} />
+                    <input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50 pl-10 pr-4 text-xs font-semibold outline-none focus:border-emerald-500 focus:bg-white transition"
+                      placeholder="Search fresh groceries..."
+                    />
+                  </form>
+
+                  {/* Links */}
+                  <nav className="grid gap-1">
+                    {links.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-black text-stone-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/40" />
+                        {link.label}
+                      </Link>
+                    ))}
+                    <div className="h-px bg-stone-100 my-2" />
+                    <Link
+                      to="/wishlist"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-black text-stone-700 hover:bg-rose-50 hover:text-rose-600 transition"
+                    >
+                      <Heart size={14} className="text-rose-500" />
+                      Wishlist
+                    </Link>
+                    <Link
+                      to={isLoggedIn ? (isAdmin ? "/admin" : "/account") : "/login"}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-xs font-black text-emerald-800 hover:bg-emerald-50 transition"
+                    >
+                      <UserRound size={14} className="text-emerald-700" />
+                      {isLoggedIn ? (isAdmin ? "Admin dashboard" : "My account") : "Sign in / Register"}
+                    </Link>
+                  </nav>
+                </div>
+
+                {/* Footer of Drawer */}
+                {isLoggedIn && (
+                  <button
+                    onClick={() => { signOut(); setMenuOpen(false); }}
+                    className="mt-6 flex min-h-11 w-full items-center gap-3 rounded-xl bg-rose-50 px-3 text-left text-xs font-black text-rose-600 hover:bg-rose-100 transition"
+                  >
+                    <LogOut size={14} />
+                    Sign out
+                  </button>
+                )}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </header>

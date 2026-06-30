@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import ProductCard from './ProductCard';
-import { products } from '../data/products';
+import { useProducts } from '../context/ProductContext';
 
 const FeaturedProducts = () => {
+  const { visibleProducts: products } = useProducts();
   const [activeCategory, setActiveCategory] = useState('all');
 
   const categories = [

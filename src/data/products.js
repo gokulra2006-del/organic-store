@@ -1,4 +1,4 @@
-﻿export const products = [
+export const products = [
   {
     id: 1,
     name: "Organic Red Apples",
@@ -218,7 +218,7 @@ export const features = [
   {
     icon: "Truck",
     title: "Free Delivery",
-    description: "Free shipping on orders over $50. Same-day delivery available in select areas."
+    description: "Free shipping on orders over ₹500. Same-day delivery available in select areas."
   },
   {
     icon: "ShieldCheck",

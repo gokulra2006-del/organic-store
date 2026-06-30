@@ -1,19 +1,15 @@
-import React, { useState } from "react";
 import { Star, CheckCircle, Trash2 } from "lucide-react";
+import { useReviews } from "../../context/ReviewContext";
 
 export default function AdminReviews() {
-  const [reviews, setReviews] = useState([
-    { id: 1, author: "Anita S.", rating: 5, text: "The apples were super fresh! Delivered within 8 minutes. Incredible!", status: "pending" },
-    { id: 2, author: "David L.", rating: 4, text: "Very good service. The honey jar is amazing, but spinach had some wilted leaves.", status: "pending" },
-    { id: 3, author: "Priya N.", rating: 5, text: "Organic Honey is authentic and delicious. Customer for life!", status: "approved" },
-  ]);
+  const { reviews, approveReview, deleteReview } = useReviews();
 
   const handleApprove = (id) => {
-    setReviews(reviews.map((r) => (r.id === id ? { ...r, status: "approved" } : r)));
+    approveReview(id);
   };
 
   const handleDelete = (id) => {
-    setReviews(reviews.filter((r) => r.id !== id));
+    deleteReview(id);
   };
 
   return (
