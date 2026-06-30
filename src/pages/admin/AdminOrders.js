@@ -3,6 +3,7 @@ import { Zap, Clock, Package, Check, ArrowRight } from "lucide-react";
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {

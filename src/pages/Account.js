@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 /* ─────────────────────────────────────────────
    Mock orders (fallback)
 ───────────────────────────────────────────── */
+// eslint-disable-next-line no-unused-vars
 const MOCK_ORDERS = [
   {
     id: 'ORD-2026-001', date: '2026-06-05', status: 'delivered', total: 24.97,
