@@ -320,7 +320,7 @@ export default function Checkout() {
 
       // 2. Set up Razorpay Checkout SDK options
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_placeholder_key',
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
         amount: data.amount,
         currency: data.currency,
         name: 'Organic Store',

@@ -23,7 +23,7 @@ const verifyToken = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-chars-long');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
 
         if (!user) {
@@ -66,7 +66,7 @@ const optionalAuth = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-chars-long');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
         if (user) req.user = user;
     } catch (error) {

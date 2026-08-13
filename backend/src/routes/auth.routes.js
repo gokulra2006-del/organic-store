@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const emailService = require('../services/email.service');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-chars-long';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Helper: Generate 6-digit OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();

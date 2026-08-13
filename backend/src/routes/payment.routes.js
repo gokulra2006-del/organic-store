@@ -6,8 +6,8 @@ const router = express.Router();
 // Initialize Razorpay helper
 const getRazorpayInstance = () => {
   return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder_key',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret'
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
   });
 };
 
@@ -49,7 +49,7 @@ router.post('/verify-payment', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'All payment fields are required' });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret';
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
     const generated_signature = crypto
       .createHmac('sha256', keySecret)
       .update(razorpay_order_id + '|' + razorpay_payment_id)
