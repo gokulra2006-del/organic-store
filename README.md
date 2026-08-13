@@ -1,43 +1,112 @@
-# 🌿 Organic Store - Complete MERN E-Commerce App
+<div align="center">
+  <h1>Organic Store</h1>
+  <p><em>A robust, full-stack e-commerce platform built with the MERN stack.</em></p>
 
-A high-fidelity, premium storefront and administrative panel built with React, Tailwind CSS, Express, Node.js, and MongoDB.
+  <p>
+    <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge" alt="Status" />
+    <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+  </p>
+
+  <h3>
+    <a href="#live-demo">Live Demo</a>
+    <span> | </span>
+    <a href="https://github.com/gokulra2006-del/organic-store">Repository</a>
+  </h3>
+</div>
 
 ---
 
-## 🔑 Admin Credentials
+## 📖 Overview
 
-To access the administrative workspace, navigate to `/admin/login` and input the following pre-seeded credentials:
+Organic Store is a comprehensive full-stack e-commerce solution. It features user authentication, a complete product catalog, shopping cart functionality, and secure payment processing with Razorpay, delivering a modern and seamless shopping experience.
 
-- **Work Email:** `admin@organicstore.com`
-- **Secret Passkey:** `OrganicStore@2024`
-- **One-Time Passcode (OTP):** The 6-digit code will be printed directly to the backend terminal console when you click "Authenticate". Copy and paste it to log in.
+## ✨ Key Features
 
----
+- **Secure User Authentication**: Complete login and registration system with JWT and bcrypt password hashing.
+- **Product Management & Shopping Cart**: Browse products, manage cart items, and proceed to checkout smoothly.
+- **Payment Integration**: Secure online transactions handled via Razorpay integration.
+- **Order Management & Invoicing**: Track order status and generate PDF invoices (via pdfkit).
+- **Email Notifications**: Automated email updates for users (powered by Nodemailer).
 
-## 🛵 How to Run the App
+## 🛠 Tech Stack
 
-Ensure you have a local MongoDB connection or configure your cluster URI inside `.env`.
+| Category | Technologies |
+| --- | --- |
+| **Frontend** | React, Tailwind CSS, Framer Motion, Styled-components, React Router DOM |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB, Mongoose |
+| **Authentication & Security** | JWT, bcrypt, Helmet, Express Rate Limit, XSS Clean |
+| **Third-Party & Tools** | Razorpay, Nodemailer, PDFKit |
 
-### 1. Start the Backend Server
-Navigate to the `backend` folder and start the API:
-```bash
-cd backend
-npm install
-npm run dev
+## 🏗 Architecture & Directory Structure
+
+```text
+├── backend/              # Node.js/Express backend
+│   ├── src/
+│   │   ├── config/       # Configurations (DB, Email, AI)
+│   │   ├── controllers/  # Route controllers
+│   │   ├── middleware/   # Auth and Error handling middleware
+│   │   ├── models/       # Mongoose DB models
+│   │   ├── routes/       # API routes
+│   │   └── services/     # Business logic (Email, AI, Auth)
+│   └── server.js         # Backend entry point
+├── public/               # Static assets
+├── src/                  # React frontend client
+│   ├── components/       # Reusable UI components
+│   ├── context/          # React Context (Auth context)
+│   ├── pages/            # Route pages
+│   ├── services/         # API services (axios)
+│   └── App.js            # Main React component
+└── README.md
 ```
 
-### 2. Start the Frontend Application
-Navigate to the root folder and start the React dev server:
-```bash
-npm install
-npm start
-```
-Open [http://localhost:3000](http://localhost:3000) to view the storefront in your browser.
+## 🚀 Quick Start (Local Installation)
 
----
+Follow these steps to set up the project locally on your machine.
 
-## ✨ Features Added
-- **Authentication Gate:** Complete registration, login, OTP code checks, and forgot-password resets matching the frontend and backend.
-- **Admin Shell:** Interactive layout and navigation with tabs (Overview, Live Order Queue, Inventory, Delivery dispatch, Testimonials, Blogs, and Configurations).
-- **Support Chat:** Interactive customer assistant floating bubble widget.
-- **Responsive Layout:** Beautiful typography, curated green tone gradients, and micro-animations styled with modern Tailwind CSS.
+### Prerequisites
+- Node.js (v18+)
+- MongoDB Database (Local or MongoDB Atlas)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/gokulra2006-del/organic-store.git
+   cd organic-store
+   ```
+
+2. **Setup the Backend:**
+   ```bash
+   cd backend
+   npm install
+   ```
+   *Create a `.env` file in the `backend` directory based on `backend/.env.example`.*
+   ```bash
+   npm run dev
+   ```
+
+3. **Setup the Frontend:**
+   ```bash
+   cd .. # Back to root
+   npm install
+   ```
+   *Create a `.env` file in the root directory based on `.env.example`.*
+   ```bash
+   npm start
+   ```
+
+## 🔐 Environment Variables
+
+Please refer to the `.env.example` files provided in both the root and `backend` directories for a complete list of required environment variables.
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome!
+
+## 📜 License
+This project is [MIT](https://choosealicense.com/licenses/mit/) licensed.
+
+## 👤 Author
+**Gokul R**
+- LinkedIn: [Gokul Ramachandran](https://www.linkedin.com/in/gokul-ramachandran-513299327/)
+- GitHub: [@gokulra2006-del](https://github.com/gokulra2006-del)
