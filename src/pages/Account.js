@@ -8,6 +8,7 @@ import {
   Package, AlertCircle, Plus, Shield,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 /* ─────────────────────────────────────────────
    Mock orders (fallback)
@@ -71,6 +72,7 @@ function formatDate(dateStr) {
 export default function Account() {
   const navigate = useNavigate();
   const { user, logout, isLoggedIn, updateProfile } = useAuth();
+  const { addToCart } = useCart();
 
   const [activeTab, setActiveTab] = useState('orders');
   const [menuCollapsed, setMenuCollapsed] = useState(false);
@@ -103,7 +105,7 @@ export default function Account() {
              date: o.createdAt,
              status: o.status,
              total: o.pricing?.total || 0,
-             items: o.items.map((i, idx) => ({ id: i.product || idx, name: i.name, qty: i.quantity, image: i.image }))
+             items: o.items.map((i, idx) => ({ id: i.product || idx, name: i.name, qty: i.quantity, image: i.image, price: i.price }))
            }));
            setOrders(mappedOrders);
         } else {
@@ -140,6 +142,20 @@ export default function Account() {
       setProfileMsg({ type: 'error', text: err.message || 'Failed to update profile' });
     } finally {
       setProfileLoading(false);
+    }
+  };
+
+  const handleReorder = (order) => {
+    if (order && order.items) {
+      order.items.forEach(item => {
+        addToCart({
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price || 0
+        }, item.qty);
+      });
+      navigate('/checkout');
     }
   };
 
@@ -447,7 +463,10 @@ export default function Account() {
                                 <Receipt size={11} /> Invoice
                               </button>
                               {order.status === 'delivered' && (
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm">
+                                <button 
+                                  onClick={() => handleReorder(order)}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm"
+                                >
                                   <RotateCcw size={11} /> Reorder
                                 </button>
                               )}

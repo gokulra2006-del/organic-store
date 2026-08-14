@@ -318,9 +318,38 @@ export default function Checkout() {
         return;
       }
 
+      const razorpayKey = process.env.REACT_APP_RAZORPAY_KEY_ID;
+
+      if (!razorpayKey || razorpayKey === 'your_razorpay_key_id') {
+        console.log('Mocking Razorpay payment success due to missing key');
+        const orderPayload = {
+          items,
+          shippingAddress: {
+            fullName: order.name,
+            email: order.email,
+            address: order.address,
+            city: order.city,
+            pincode: order.zip
+          },
+          paymentMethod: 'online',
+          totalAmount: total
+        };
+        
+        const backendOrder = await import('../services/api').then(module => module.orderAPI.placeOrder(orderPayload));
+
+        placeOrder(total);
+        navigate('/payment-success', { 
+          state: { 
+            paymentId: `mock_pay_${Date.now()}`, 
+            orderId: backendOrder?.data?.data?.orderNumber || backendOrder?.data?.orderNumber || data.orderId 
+          }
+        });
+        return;
+      }
+
       // 2. Set up Razorpay Checkout SDK options
       const options = {
-        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        key: razorpayKey,
         amount: data.amount,
         currency: data.currency,
         name: 'Organic Store',
