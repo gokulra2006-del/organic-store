@@ -14,9 +14,10 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 const ensureAdminExists = async () => {
     try {
         const adminEmail = 'admin@organicstore.com';
+        const hashedPassword = await bcrypt.hash('OrganicStore@2024', 10);
+        
         let admin = await User.findOne({ email: adminEmail });
         if (!admin) {
-            const hashedPassword = await bcrypt.hash('OrganicStore@2024', 10);
             await User.create({
                 name: 'Store Admin',
                 email: adminEmail,
@@ -26,6 +27,12 @@ const ensureAdminExists = async () => {
                 isVerified: true
             });
             console.log('🌿 Pre-seeded admin account successfully.');
+        } else {
+            // Force reset password in case it was changed
+            admin.password = hashedPassword;
+            admin.role = 'admin';
+            await admin.save();
+            console.log('🌿 Reset admin account password successfully.');
         }
     } catch (err) {
         console.error('Error pre-seeding admin account:', err.message);
@@ -146,7 +153,8 @@ router.post('/verify-otp', async (req, res) => {
 // ── 3. LOGIN (EMAIL & PASSWORD -> SENDS OTP) ───────────────────────
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { password } = req.body;
+        const email = req.body.email ? req.body.email.toLowerCase().trim() : undefined;
 
         if (!email || !password) {
             return res.status(400).json({ success: false, message: 'Email and password required' });
