@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import {
   FaSearch,
@@ -198,15 +198,6 @@ const CatItem = styled.button`
   &:hover {
     background: #f0fdf4;
   }
-`;
-
-const CatCount = styled.span`
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 600;
-  background: #f1f5f9;
-  padding: 2px 8px;
-  border-radius: 999px;
 `;
 
 const PriceRange = styled.div`

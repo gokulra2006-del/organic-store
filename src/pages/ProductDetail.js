@@ -4,7 +4,6 @@ import styled from "styled-components";
 import { useCart } from "../context/CartContext";
 import { productAPI, reviewAPI, orderAPI } from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { FaHeart, FaStar, FaPlus, FaMinus, FaCheck } from "react-icons/fa";
 
 /* ─── Page ─────────────────────────────────────────────────── */
 const Page = styled.section`
@@ -385,7 +384,7 @@ export default function ProductDetail() {
   
   const [qty, setQty] = useState(1);
   const [toast, setToast] = useState("");
-  const { addToCart, cart, updateQuantity } = useCart();
+  const { addToCart } = useCart();
   
   // Reviews states
   const [reviews, setReviews] = useState([]);
@@ -509,8 +508,6 @@ export default function ProductDetail() {
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
-
-  const inCart = cart.find(item => item.id === (product._id || product.id));
 
   return (
     <Page>

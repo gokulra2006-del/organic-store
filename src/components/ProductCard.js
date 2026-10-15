@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { FaEye, FaShoppingCart, FaHeart, FaStar, FaCheck, FaPlus, FaMinus } from "react-icons/fa";
+import { FaEye, FaHeart, FaStar, FaPlus, FaMinus } from "react-icons/fa";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 
@@ -209,45 +209,6 @@ const AddBtn = styled.button`
   &:active {
     transform: scale(0.98);
   }
-`;
-
-const QtyControl = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  flex: 1;
-`;
-
-const QtyBtn = styled.button`
-  width: 44px;
-  height: 48px;
-  border: none;
-  background: #fff;
-  color: #475569;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-  &:hover {
-    background: #f8fafc;
-  }
-  &:active {
-    background: #f1f5f9;
-  }
-`;
-
-const QtyVal = styled.div`
-  flex: 1;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 800;
-  color: #0f172a;
-  min-width: 28px;
 `;
 
 export default function ProductCard({ product }) {
