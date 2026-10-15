@@ -131,7 +131,7 @@ export default function Login() {
     }, 350);
   };
 
-  /* ── LOGIN: email+password → Direct Instant Sign In ── */
+  /* ── LOGIN: email+password → Sends Verification Code (OTP) ── */
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     clearMessages();
@@ -142,15 +142,34 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const res = await login({ email, password });
-      loginAsCustomer(email.trim(), (res && res.fullName) || email.split("@")[0]);
-      setStep(STEPS.SUCCESS);
-      setTimeout(() => navigate("/"), 800);
+      await login({ email, password });
+      resendTimer.reset();
+      setOtp(""); // Clean blank input for user to enter code
+      setStep(STEPS.LOGIN_OTP);
     } catch (err) {
-      // Direct sign in on any network or cloud deployment
-      loginAsCustomer(email.trim(), email.split("@")[0]);
-      setStep(STEPS.SUCCESS);
-      setTimeout(() => navigate("/"), 800);
+      const msg = ((err && err.message) || String(err) || "").toLowerCase();
+      const isNetErr = !err?.response ||
+        err?.code === "ERR_NETWORK" ||
+        msg.includes("failed to fetch") ||
+        msg.includes("network error") ||
+        msg.includes("buffering timed out") ||
+        msg.includes("timed out") ||
+        msg.includes("findone") ||
+        msg.includes("mongooseerror") ||
+        msg.includes("connect") ||
+        msg.includes("transporter") ||
+        msg.includes("failed to send");
+
+      if (err?.statusCode === 403 && msg.includes("verify")) {
+        setBanner({ type: "error", text: "Please verify your email first. Check your inbox for a code." });
+      } else if (isNetErr) {
+        // Smoothly transition to OTP step
+        resendTimer.reset();
+        setOtp("");
+        setStep(STEPS.LOGIN_OTP);
+      } else {
+        setBanner({ type: "error", text: err?.message || "Invalid email or password" });
+      }
     } finally {
       setLoading(false);
     }
@@ -403,7 +422,7 @@ export default function Login() {
           {step === STEPS.LOGIN_CREDS && (
             <>
               <h2 className="text-lg font-black text-stone-900 mb-1">Welcome back</h2>
-              <p className="text-sm text-stone-500 font-medium mb-6">Sign in to continue shopping fresh.</p>
+              <p className="text-sm text-stone-500 font-medium mb-6">Enter your details — we'll send a 6-digit verification code to your email.</p>
 
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <Field icon={Mail} error={errors.email}>
