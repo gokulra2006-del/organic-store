@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
-import { io } from "socket.io-client";
 import {
   FaArrowLeft,
   FaCheck,
@@ -322,8 +321,24 @@ export default function OrderTracking() {
   ];
 
   useEffect(() => {
-    // Connect to live updates via Socket.io
-    const socket = io("http://localhost:5001");
+    // Connect to live updates via Socket.io if available
+    let socket = null;
+    try {
+      if (typeof window !== "undefined" && window.io) {
+        socket = window.io("http://localhost:5001");
+        socket.on("connect", () => {
+          socket.emit("join_order", { orderId });
+        });
+        socket.on("order_status_update", (data) => {
+          if (data?.status) {
+            setStatus(data.status);
+            updateProgress(data.status);
+          }
+        });
+      }
+    } catch (e) {
+      // safe fallback
+    }
 
     // Mock initial order details loading
     setOrder({
@@ -335,18 +350,6 @@ export default function OrderTracking() {
         phone: "+91 9876543210",
         vehicle: "Electric Scooter",
       },
-    });
-
-    socket.on("connect", () => {
-      // Join order specific room
-      socket.emit("join_order", { orderId });
-    });
-
-    socket.on("order_status_update", (data) => {
-      if (data.status) {
-        setStatus(data.status);
-        updateProgress(data.status);
-      }
     });
 
     // Simulated status updates in case socket is not running
@@ -366,7 +369,7 @@ export default function OrderTracking() {
     }, 15000);
 
     return () => {
-      socket.disconnect();
+      try { socket?.disconnect(); } catch (e) {}
       clearTimeout(timer);
       clearTimeout(timer2);
       clearTimeout(timer3);
