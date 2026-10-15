@@ -668,17 +668,6 @@ function OtpStep({ title, subtitle, otp, setOtp, error, onSubmit, loading, resen
         <h2 className="text-xl font-black text-stone-900 tracking-tight">2-Step Verification</h2>
         <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1 leading-relaxed">{subtitle}</p>
 
-        <div className="mx-auto my-3 max-w-xs rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center">
-          <div className="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">
-            ⚡ Your Verification Code:
-          </div>
-          <div className="font-mono text-xl font-black text-emerald-950 tracking-[0.25em] bg-white py-1 px-4 rounded-lg border border-emerald-300 inline-block shadow-xs mt-1">
-            123456
-          </div>
-          <div className="text-[11px] text-emerald-700 font-medium mt-1">
-            Type <strong>123456</strong> or click 1-Tap below
-          </div>
-        </div>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -701,20 +690,6 @@ function OtpStep({ title, subtitle, otp, setOtp, error, onSubmit, loading, resen
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 group-hover:bg-white text-white group-hover:text-[#153d2b] shadow-inner group-hover:translate-x-1.5 transition-all duration-200 shrink-0">
             {loading ? <Loader2 size={20} className="animate-spin" /> : <ArrowRight size={22} strokeWidth={2.8} />}
           </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setOtp("123456");
-            setTimeout(() => {
-              const fakeEvent = { preventDefault: () => {} };
-              onSubmit(fakeEvent);
-            }, 100);
-          }}
-          className="w-full py-2.5 rounded-xl border border-dashed border-emerald-400 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs font-black transition cursor-pointer flex items-center justify-center gap-1.5"
-        >
-          ⚡ 1-Tap Auto Fill & Verify (123456)
         </button>
       </form>
 
