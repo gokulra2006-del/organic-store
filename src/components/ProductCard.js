@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { FaEye, FaShoppingCart, FaHeart, FaStar, FaCheck, FaPlus, FaMinus } from "react-icons/fa";
@@ -251,24 +251,17 @@ const QtyVal = styled.div`
 `;
 
 export default function ProductCard({ product }) {
-  const { addToCart, cart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
-  const [qty, setQty] = useState(1);
-  const [added, setAdded] = useState(false);
+  const [liked, setLiked] = useState(isWishlisted(product.id));
 
-  const inCart = cart.find(item => item.id === product.id);
-  const liked = isWishlisted(product.id);
+  // Sync like state when wishlist context updates
+  useEffect(() => {
+    setLiked(isWishlisted(product.id));
+  }, [cart, isWishlisted, product.id]);
 
-  const handleAdd = () => {
-    addToCart(product, qty);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-  };
-
-  const handleQtyChange = (delta) => {
-    const newQty = Math.max(1, Math.min(10, qty + delta));
-    setQty(newQty);
-  };
+  const prodId = product._id || product.id;
+  const inCart = Array.isArray(cart) ? cart.find(item => String(item.id || item._id) === String(prodId)) : null;
 
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
@@ -301,43 +294,53 @@ export default function ProductCard({ product }) {
         </RatingRow>
 
         <PriceRow>
-          <Price>₹{product.price.toFixed(2)}</Price>
+          <Price>₹{product.price}</Price>
           {product.originalPrice && (
             <>
-              <OldPrice>₹{product.originalPrice.toFixed(2)}</OldPrice>
+              <OldPrice>₹{product.originalPrice}</OldPrice>
               {discount > 0 && <Discount>-{discount}%</Discount>}
             </>
           )}
         </PriceRow>
 
-        <CartSection>
+        <CartSection style={{ marginTop: 'auto' }}>
           {!inCart ? (
-            <>
-              <QtyControl>
-                <QtyBtn onClick={() => handleQtyChange(-1)}>
-                  <FaMinus size={10} />
-                </QtyBtn>
-                <QtyVal>{qty}</QtyVal>
-                <QtyBtn onClick={() => handleQtyChange(1)}>
-                  <FaPlus size={10} />
-                </QtyBtn>
-              </QtyControl>
-              <AddBtn $added={added} onClick={handleAdd}>
-                {added ? (
-                  <>
-                    <FaCheck /> Added
-                  </>
-                ) : (
-                  <>
-                    <FaShoppingCart /> Add
-                  </>
-                )}
-              </AddBtn>
-            </>
-          ) : (
-            <AddBtn $added={true} onClick={handleAdd} style={{ width: '100%' }}>
-              <FaCheck /> In Cart ({inCart.quantity})
+            <AddBtn 
+              $added={false} 
+              onClick={(e) => {
+                e.preventDefault();
+                addToCart(product, 1);
+              }}
+              style={{ background: '#fff', border: '1.5px solid #16a34a', color: '#16a34a', minHeight: '40px', padding: '6px 12px', width: '100%' }}
+            >
+              <span className="flex items-center gap-1.5 font-black text-sm">
+                ADD <FaPlus size={9} />
+              </span>
             </AddBtn>
+          ) : (
+            <div className="flex items-center justify-between bg-[#16a34a] border border-[#16a34a] rounded-xl overflow-hidden flex-1 text-white h-10 shadow-sm shadow-emerald-700/10 w-full">
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  updateQuantity(prodId, inCart.quantity - 1);
+                }} 
+                className="w-10 h-full flex items-center justify-center hover:bg-emerald-800 active:scale-95 transition"
+                aria-label="Decrease quantity"
+              >
+                <FaMinus size={11} />
+              </button>
+              <span className="font-extrabold text-sm select-none">{inCart.quantity}</span>
+              <button 
+                onClick={(e) => {
+                  e.preventDefault();
+                  updateQuantity(prodId, inCart.quantity + 1);
+                }} 
+                className="w-10 h-full flex items-center justify-center hover:bg-emerald-800 active:scale-95 transition"
+                aria-label="Increase quantity"
+              >
+                <FaPlus size={11} />
+              </button>
+            </div>
           )}
         </CartSection>
       </Body>

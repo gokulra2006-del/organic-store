@@ -2,59 +2,18 @@ import React, { useState } from "react";
 import { Zap, Clock, Package, Check, ArrowRight } from "lucide-react";
 
 export default function AdminOrders() {
-  const [orders, setOrders] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState([
+    { id: "#1027", customer: "Anita S.", item: "Wellness bundle", total: "₹499.00", time: "1 min ago", status: "incoming" },
+    { id: "#1026", customer: "Jordan K.", item: "Bananas x2, Milk", total: "₹249.00", time: "2 min ago", status: "incoming" },
+    { id: "#1025", customer: "Sarah M.", item: "Pantry essentials", total: "₹680.00", time: "4 min ago", status: "packing" },
+    { id: "#1023", customer: "David L.", item: "Fresh produce x6", total: "₹520.00", time: "6 min ago", status: "packing" },
+    { id: "#1024", customer: "Gokul R.", item: "Apples x3", total: "₹350.00", time: "ETA 4 mins", status: "delivering" },
+  ]);
 
-  React.useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const fetchOrders = async () => {
-    try {
-      const { orderAPI } = await import('../../services/api');
-      const response = await orderAPI.getAllOrders();
-      const rawOrders = response?.data?.orders || response?.orders || response?.data || [];
-      
-      const formattedOrders = rawOrders.map(order => {
-        let status = 'incoming';
-        if (order.status === 'processing') status = 'packing';
-        if (order.status === 'out_for_delivery') status = 'delivering';
-        if (order.status === 'delivered') status = 'completed';
-
-        return {
-          id: order.orderNumber,
-          _id: order._id,
-          customer: order.shippingAddress?.fullName || order.user?.fullName || "Customer",
-          item: `${order.items.length} items`,
-          total: `₹${order.pricing?.total?.toFixed(2)}`,
-          time: new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-          status
-        };
-      });
-      setOrders(formattedOrders.filter(o => o.status !== 'completed'));
-    } catch (err) {
-      console.error('Failed to fetch orders:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateStatus = async (id, backendId, nextStatus) => {
-    try {
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: nextStatus } : o)));
-      
-      let backendStatus = 'confirmed';
-      if (nextStatus === 'packing') backendStatus = 'processing';
-      if (nextStatus === 'delivering') backendStatus = 'out_for_delivery';
-      if (nextStatus === 'completed') backendStatus = 'delivered';
-      
-      const { orderAPI } = await import('../../services/api');
-      await orderAPI.updateOrderStatus(backendId, backendStatus);
-    } catch (err) {
-      console.error('Failed to update status:', err);
-      fetchOrders();
-    }
+  const updateStatus = (id, nextStatus) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, status: nextStatus } : o))
+    );
   };
 
   const columns = [
@@ -110,7 +69,7 @@ export default function AdminOrders() {
                         <span className="text-[10px] font-bold text-stone-400">{order.time}</span>
                         {col.key === "incoming" && (
                           <button
-                            onClick={() => updateStatus(order.id, order._id, "packing")}
+                            onClick={() => updateStatus(order.id, "packing")}
                             className="inline-flex items-center gap-1 bg-[#153d2b] hover:bg-emerald-800 text-white rounded-lg px-2.5 py-1.5 text-[10px] font-black transition cursor-pointer"
                           >
                             <span>Accept</span> <ArrowRight size={10} />
@@ -118,7 +77,7 @@ export default function AdminOrders() {
                         )}
                         {col.key === "packing" && (
                           <button
-                            onClick={() => updateStatus(order.id, order._id, "delivering")}
+                            onClick={() => updateStatus(order.id, "delivering")}
                             className="inline-flex items-center gap-1 bg-[#153d2b] hover:bg-emerald-800 text-white rounded-lg px-2.5 py-1.5 text-[10px] font-black transition cursor-pointer"
                           >
                             <span>Dispatch</span> <ArrowRight size={10} />
@@ -126,7 +85,7 @@ export default function AdminOrders() {
                         )}
                         {col.key === "delivering" && (
                           <button
-                            onClick={() => updateStatus(order.id, order._id, "completed")}
+                            onClick={() => updateStatus(order.id, "completed")}
                             className="inline-flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 text-[#153d2b] rounded-lg px-2.5 py-1.5 text-[10px] font-black transition cursor-pointer"
                           >
                             <Check size={10} /> <span>Complete</span>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import {
   FaSearch,
@@ -6,8 +6,21 @@ import {
   FaTimes,
   FaLeaf,
 } from "react-icons/fa";
-import { useProducts } from "../context/ProductContext";
+import { productAPI } from "../services/api";
 import ProductCard from "../components/ProductCard";
+import { products as fallbackProducts } from "../data/products";
+
+const SkeletonCard = () => (
+  <div className="bg-white border border-slate-200 rounded-[20px] p-4 flex flex-col gap-3 animate-pulse">
+    <div className="bg-slate-200 aspect-square w-full rounded-xl" style={{ minHeight: '190px' }} />
+    <div className="h-4 bg-slate-200 rounded w-3/4" />
+    <div className="h-3 bg-slate-200 rounded w-1/2" />
+    <div className="flex justify-between items-center mt-auto pt-2">
+      <div className="h-6 bg-slate-200 rounded w-1/3" />
+      <div className="h-9 bg-slate-200 rounded-xl w-16" />
+    </div>
+  </div>
+);
 
 const Page = styled.div`
   background: #f8fafc;
@@ -267,12 +280,9 @@ const ClearBtn = styled.button`
 /* Mobile category pill strip */
 const MobileFilters = styled.div`
   display: flex;
-  flex-wrap: nowrap;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
-  width: 100%;
-  max-width: 100%;
   /* Hide scrollbar */
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -311,12 +321,6 @@ const Grid = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 18px;
   }
-`;
-
-const MainContent = styled.div`
-  min-width: 0;
-  width: 100%;
-  max-width: 100%;
 `;
 
 const EmptyState = styled.div`
@@ -369,7 +373,6 @@ const CATS = [
 ];
 
 export default function Shop() {
-  const { visibleProducts: products } = useProducts();
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("all");
   const [sort, setSort] = useState("featured");
@@ -377,25 +380,64 @@ export default function Shop() {
   const [maxPrice, setMaxPrice] = useState("");
   const [rating, setRating] = useState(0);
 
-  const filtered = useMemo(() => {
-    let res = [...products];
-    if (cat !== "all") res = res.filter((p) => p.category === cat);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      res = res.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-      );
+  const [productsList, setProductsList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const applyFallback = () => {
+      let list = [...fallbackProducts];
+      if (cat && cat !== "all") {
+        list = list.filter((p) => p.category?.toLowerCase() === cat.toLowerCase());
+      }
+      if (search) {
+        const q = search.toLowerCase();
+        list = list.filter((p) =>
+          p.name?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q)
+        );
+      }
+      if (minPrice) list = list.filter((p) => p.price >= parseFloat(minPrice));
+      if (maxPrice) list = list.filter((p) => p.price <= parseFloat(maxPrice));
+      if (rating > 0) list = list.filter((p) => (p.rating || 0) >= rating);
+      if (sort === "price-low") list.sort((a, b) => a.price - b.price);
+      else if (sort === "price-high") list.sort((a, b) => b.price - a.price);
+      else if (sort === "rating") list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+      setProductsList(list);
+      setError(null);
+    };
+
+    try {
+      const res = await productAPI.getProducts({
+        search,
+        category: cat,
+        sort,
+        minPrice,
+        maxPrice,
+        rating
+      });
+      const items = res?.data?.products || (Array.isArray(res?.data) ? res.data : null);
+      if (items && items.length > 0) {
+        setProductsList(items);
+        setError(null);
+      } else {
+        applyFallback();
+      }
+    } catch (err) {
+      console.warn("API products fetch failed, using fallback catalogue:", err);
+      applyFallback();
+    } finally {
+      setLoading(false);
     }
-    if (minPrice) res = res.filter((p) => p.price >= parseFloat(minPrice));
-    if (maxPrice) res = res.filter((p) => p.price <= parseFloat(maxPrice));
-    if (rating) res = res.filter((p) => p.rating >= rating);
-    if (sort === "price-low") res.sort((a, b) => a.price - b.price);
-    if (sort === "price-high") res.sort((a, b) => b.price - a.price);
-    if (sort === "rating") res.sort((a, b) => b.rating - a.rating);
-    return res;
-  }, [search, cat, sort, minPrice, maxPrice, rating, products]);
+  }, [search, cat, sort, minPrice, maxPrice, rating]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const hasFilters = cat !== "all" || minPrice || maxPrice || rating > 0;
 
@@ -413,7 +455,7 @@ export default function Shop() {
         <TopInner>
           <div>
             <PageTitle>Shop</PageTitle>
-            <Count>{filtered.length} products found</Count>
+            <Count>{productsList.length} products found</Count>
           </div>
           <SearchWrap>
             <SearchIcon>
@@ -463,9 +505,6 @@ export default function Shop() {
             {CATS.map((c) => (
               <CatItem key={c.key} $a={cat === c.key} onClick={() => setCat(c.key)}>
                 {c.label}
-                <CatCount>
-                  {products.filter((p) => c.key === "all" ? true : p.category === c.key).length}
-                </CatCount>
               </CatItem>
             ))}
           </FilterCard>
@@ -509,7 +548,7 @@ export default function Shop() {
         </Sidebar>
 
         {/* Main content */}
-        <MainContent>
+        <div>
           {/* Mobile category pill strip */}
           <MobileFilters>
             {CATS.map((c) => (
@@ -523,20 +562,36 @@ export default function Shop() {
             ))}
           </MobileFilters>
 
-          <Grid>
-            {filtered.length > 0 ? (
-              filtered.map((p) => <ProductCard key={p.id} product={p} />)
-            ) : (
-              <EmptyState>
-                <EmptyIcon>
-                  <FaLeaf />
-                </EmptyIcon>
-                <EmptyTitle>No products found</EmptyTitle>
-                <EmptyText>Try adjusting your filters or search query</EmptyText>
-              </EmptyState>
-            )}
-          </Grid>
-        </MainContent>
+          {loading ? (
+            <Grid>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => <SkeletonCard key={i} />)}
+            </Grid>
+          ) : error ? (
+            <div className="text-center py-20 bg-white border border-stone-200 rounded-[20px] shadow-sm">
+              <p className="text-red-500 font-extrabold">{error}</p>
+              <button 
+                onClick={fetchProducts} 
+                className="mt-4 px-6 py-2.5 bg-[#153d2b] text-white rounded-xl font-bold text-sm hover:bg-emerald-800 transition"
+              >
+                Retry
+              </button>
+            </div>
+          ) : (
+            <Grid>
+              {productsList.length > 0 ? (
+                productsList.map((p) => <ProductCard key={p.id || p._id} product={p} />)
+              ) : (
+                <EmptyState>
+                  <EmptyIcon>
+                    <FaLeaf />
+                  </EmptyIcon>
+                  <EmptyTitle>No products found</EmptyTitle>
+                  <EmptyText>Try adjusting your filters or search query</EmptyText>
+                </EmptyState>
+              )}
+            </Grid>
+          )}
+        </div>
       </Layout>
     </Page>
   );

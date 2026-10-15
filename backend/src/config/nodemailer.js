@@ -1,31 +1,32 @@
 const nodemailer = require('nodemailer');
 
-const mailUser = process.env.SMTP_USER || process.env.EMAIL_USER;
-const mailPass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
-
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-        user: mailUser,
-        pass: mailPass
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
-
-const sendEmail = async (options) => {
-    const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME || 'Organic Store'}" <${process.env.SMTP_FROM_EMAIL || mailUser}>`,
-        to: options.to,
-        subject: options.subject,
-        html: options.html,
-        text: options.text
-    };
-
-    await transporter.sendMail(mailOptions);
+const createGmailTransporter = () => {
+    return nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: (process.env.EMAIL_USER || '').trim(),
+            pass: (process.env.EMAIL_PASS || '').replace(/\s+/g, '')
+        }
+    });
 };
 
-module.exports = { transporter, sendEmail };
+const sendEmail = async ({ to, subject, html }) => {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.warn('⚠️ EMAIL_USER or EMAIL_PASS is not configured in backend/.env');
+        return null;
+    }
+
+    const transporter = createGmailTransporter();
+    const mailOptions = {
+        from: `"Organic Store" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✉️ Email successfully delivered to ${to}: ${info.messageId}`);
+    return info;
+};
+
+module.exports = { sendEmail };

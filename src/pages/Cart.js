@@ -300,12 +300,12 @@ export default function Cart() {
             <span>₹{Number(subtotal).toFixed(2)}</span>
           </SummaryLine>
           <SummaryLine style={{ fontWeight: 500, color: '#64748b', borderBottom: '1px solid rgba(186,247,208,0.4)' }}>
-            <span>Shipping</span>
-            <span>₹5.00</span>
+            <span>Delivery Fee</span>
+            <span>{Number(subtotal) >= 499 ? <strong style={{ color: '#16a34a' }}>FREE</strong> : '₹25.00'}</span>
           </SummaryLine>
           <SummaryLine>
             <span>Total</span>
-            <span>₹{(Number(subtotal) + 5).toFixed(2)}</span>
+            <span>₹{(Number(subtotal) + (Number(subtotal) >= 499 ? 0 : 25)).toFixed(2)}</span>
           </SummaryLine>
 
           <CheckoutButton to="/checkout">

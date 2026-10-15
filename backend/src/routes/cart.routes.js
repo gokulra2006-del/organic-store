@@ -3,10 +3,16 @@ const router = express.Router();
 const cartController = require('../controllers/cart.controller');
 const { protect } = require('../middleware/auth.middleware');
 
-router.get('/', protect, cartController.getCart);
-router.post('/add', protect, cartController.addToCart);
-router.put('/update/:productId', protect, cartController.updateCartItem);
-router.delete('/remove/:productId', protect, cartController.removeFromCart);
-router.delete('/clear', protect, cartController.clearCart);
+router.route('/')
+    .get(protect, cartController.getCart)
+    .post(protect, cartController.addToCart)
+    .delete(protect, cartController.clearCart);
+
+router.route('/:productId')
+    .put(protect, cartController.updateCartItem)
+    .delete(protect, cartController.removeFromCart);
+
+// Coupon support
+router.post('/coupon', protect, cartController.applyCoupon);
 
 module.exports = router;

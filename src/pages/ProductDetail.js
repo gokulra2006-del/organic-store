@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { useCart } from "../context/CartContext";
-import { useProducts } from "../context/ProductContext";
+import { productAPI, reviewAPI, orderAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { FaHeart, FaStar, FaPlus, FaMinus, FaCheck } from "react-icons/fa";
 
 /* ─── Page ─────────────────────────────────────────────────── */
-
 const Page = styled.section`
   background: #f4f6fb;
   min-height: 100vh;
@@ -23,7 +24,7 @@ const Breadcrumb = styled.nav`
   a {
     color: #94a3b8;
     text-decoration: none;
-    &:hover { color: #0f3460; }
+    &:hover { color: #153d2b; }
   }
 `;
 
@@ -40,7 +41,6 @@ const Wrapper = styled.div`
 `;
 
 /* ─── LEFT: Image Card ─────────────────────────────────────── */
-
 const ImageCard = styled.div`
   background: #fff;
   border-radius: 16px;
@@ -85,28 +85,7 @@ const MainImage = styled.img`
   display: block;
 `;
 
-const ThumbRow = styled.div`
-  display: flex;
-  gap: 8px;
-`;
-
-const Thumb = styled.button`
-  width: 58px;
-  height: 58px;
-  border-radius: 8px;
-  border: 2px solid ${({ $active }) => ($active ? "#0f3460" : "#eef0f7")};
-  background: #f8f9fd;
-  overflow: hidden;
-  cursor: pointer;
-  padding: 0;
-  transition: border-color 0.15s;
-  flex-shrink: 0;
-  &:hover { border-color: #0f3460; }
-  img { width: 100%; height: 100%; object-fit: cover; display: block; }
-`;
-
 /* ─── RIGHT: Details Card ──────────────────────────────────── */
-
 const DetailsCard = styled.div`
   background: #fff;
   border-radius: 16px;
@@ -207,7 +186,6 @@ const Desc = styled.p`
   line-height: 1.75;
 `;
 
-/* Meta 2x2 grid */
 const MetaGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -236,7 +214,6 @@ const MV = styled.div`
   color: #0f172a;
 `;
 
-/* Delivery strip */
 const DeliveryStrip = styled.div`
   background: #f0fdf4;
   border: 1.5px solid #bbf7d0;
@@ -250,7 +227,6 @@ const DeliveryStrip = styled.div`
   color: #166534;
 `;
 
-/* Quantity row */
 const QtyRow = styled.div`
   display: flex;
   align-items: center;
@@ -270,11 +246,10 @@ const QtyLabel = styled.span`
 const QtyControls = styled.div`
   display: flex;
   align-items: center;
-  gap: 0;
-  background: #fff;
   border: 1.5px solid #e2e8f0;
   border-radius: 9px;
   overflow: hidden;
+  background: #fff;
 `;
 
 const QtyBtn = styled.button`
@@ -284,14 +259,12 @@ const QtyBtn = styled.button`
   background: transparent;
   font-size: 18px;
   font-weight: 800;
-  color: #0f3460;
+  color: #153d2b;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
   &:hover { background: #f1f5f9; }
-  &:active { background: #e2e8f0; }
 `;
 
 const QtyNum = styled.span`
@@ -308,7 +281,6 @@ const QtyNum = styled.span`
   justify-content: center;
 `;
 
-/* Buttons */
 const BtnGroup = styled.div`
   display: grid;
   gap: 9px;
@@ -318,31 +290,29 @@ const CartBtn = styled.button`
   width: 100%;
   border: none;
   border-radius: 12px;
-  background: #0f3460;
+  background: #153d2b;
   color: #fff;
   padding: 13px;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
-  letter-spacing: 0.2px;
-  transition: background 0.2s, transform 0.1s;
-  &:hover { background: #1e4d8c; }
-  &:active { transform: scale(0.99); }
+  transition: all 0.2s;
+  &:hover { background: #1f583e; }
   &:disabled { background: #94a3b8; cursor: not-allowed; }
 `;
 
 const BuyBtn = styled.button`
   width: 100%;
-  border: 2px solid #0f3460;
+  border: 2px solid #153d2b;
   border-radius: 12px;
   background: #fff;
-  color: #0f3460;
+  color: #153d2b;
   padding: 11px;
   font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.18s;
-  &:hover { background: #0f3460; color: #fff; }
+  &:hover { background: #153d2b; color: #fff; }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
@@ -353,10 +323,33 @@ const BackBtn = styled(Link)`
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
-  &:hover { color: #0f3460; }
+  &:hover { color: #153d2b; }
 `;
 
-/* Toast */
+/* ─── Reviews Styled Components ────────────────────────────── */
+const ReviewsCard = styled.div`
+  max-width: 1000px;
+  margin: 20px auto 0;
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid #eef0f7;
+  padding: 24px;
+`;
+
+const ReviewItem = styled.div`
+  border-bottom: 1px solid #f1f5f9;
+  padding: 16px 0;
+  &:last-child { border-bottom: none; }
+`;
+
+const Form = styled.form`
+  background: #f8faff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 14px;
+`;
+
 const Toast = styled.div`
   position: fixed;
   bottom: 24px;
@@ -369,39 +362,147 @@ const Toast = styled.div`
   font-weight: 700;
   z-index: 9999;
   box-shadow: 0 8px 24px rgba(0,0,0,0.14);
-  animation: popUp 0.22s cubic-bezier(0.34,1.56,0.64,1);
-  @keyframes popUp {
-    from { opacity: 0; transform: translateY(16px) scale(0.95); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
-  }
 `;
 
-/* ─── Stars helper ─────────────────────────────────────────── */
 function Stars({ r }) {
   return (
     <StarRow>
-      {[1,2,3,4,5].map(s => (
+      {[1, 2, 3, 4, 5].map(s => (
         <span key={s} style={{ color: s <= Math.round(r) ? "#f59e0b" : "#e2e8f0" }}>★</span>
       ))}
     </StarRow>
   );
 }
 
-/* ─── Component ────────────────────────────────────────────── */
 export default function ProductDetail() {
-  const { products } = useProducts();
   const { id } = useParams();
-  const product = products.find(p => p.id === Number(id));
-  const [qty, setQty] = useState(1);
-  const [activeThumb, setActiveThumb] = useState(0);
-  const [toast, setToast] = useState(false);
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const [qty, setQty] = useState(1);
+  const [toast, setToast] = useState("");
+  const { addToCart, cart, updateQuantity } = useCart();
+  
+  // Reviews states
+  const [reviews, setReviews] = useState([]);
+  const [verifiedOrder, setVerifiedOrder] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
-  if (!product) return (
+  const fetchProductDetails = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await productAPI.getProduct(id);
+      if (res?.data) {
+        setProduct(res.data);
+        
+        // Fetch reviews
+        const revRes = await reviewAPI.getReviews(res.data._id || res.data.id);
+        if (revRes?.data) {
+          setReviews(revRes.data);
+        }
+        
+        // Check if user has a delivered order for this product
+        if (isLoggedIn) {
+          try {
+            const ordersRes = await orderAPI.getMyOrders();
+            if (ordersRes?.data?.orders) {
+              const matched = ordersRes.data.orders.find(o => 
+                o.status === 'delivered' && 
+                o.items.some(item => String(item.product) === String(res.data._id || res.data.id))
+              );
+              if (matched) {
+                setVerifiedOrder(matched);
+              }
+            }
+          } catch (oErr) {
+            console.error('Error fetching user orders for reviews:', oErr);
+          }
+        }
+      } else {
+        setError("Product not found");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load product details");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, isLoggedIn]);
+
+  useEffect(() => {
+    fetchProductDetails();
+  }, [fetchProductDetails]);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart(product, qty);
+    showToast(`Added ${qty} × ${product.name} to cart`);
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    addToCart(product, qty);
+    navigate("/cart");
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+
+    setSubmittingReview(true);
+    try {
+      const reviewPayload = {
+        productId: product._id || product.id,
+        orderId: verifiedOrder?._id || verifiedOrder?.id,
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment
+      };
+      
+      await reviewAPI.submitReview(reviewPayload);
+      showToast("Review submitted successfully!");
+      setReviewComment("");
+      setReviewTitle("");
+      
+      // Reload reviews
+      const revRes = await reviewAPI.getReviews(product._id || product.id);
+      if (revRes?.data) setReviews(revRes.data);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to submit review. Verified purchase required.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  if (loading) return (
     <Page>
-      <h2 style={{ color: "#0f172a" }}>Product not found</h2>
-      <BackBtn to="/shop">← Back to shop</BackBtn>
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-800"></div>
+        <p className="text-stone-500 font-bold mt-4">Loading product details...</p>
+      </div>
+    </Page>
+  );
+
+  if (error || !product) return (
+    <Page>
+      <div className="text-center py-20 bg-white border border-stone-200 rounded-[20px] shadow-sm max-w-lg mx-auto">
+        <p className="text-red-500 font-black text-lg">{error || "Product not found"}</p>
+        <BackBtn to="/shop" className="mt-4 inline-block text-emerald-800 font-bold">← Back to shop</BackBtn>
+      </div>
     </Page>
   );
 
@@ -409,20 +510,7 @@ export default function ProductDetail() {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
     : null;
 
-  const showToast = () => {
-    setToast(true);
-    setTimeout(() => setToast(false), 2200);
-  };
-
-  const handleAddToCart = () => {
-    addToCart(product, qty);
-    showToast();
-  };
-
-  const handleBuyNow = () => {
-    addToCart(product, qty);
-    navigate("/cart");
-  };
+  const inCart = cart.find(item => item.id === (product._id || product.id));
 
   return (
     <Page>
@@ -433,7 +521,7 @@ export default function ProductDetail() {
       </Breadcrumb>
 
       <Wrapper>
-        {/* ── Left ── */}
+        {/* Image view */}
         <ImageCard>
           <BadgeStack>
             <Pill v={product.inStock ? "stock" : "nostock"}>
@@ -441,25 +529,16 @@ export default function ProductDetail() {
             </Pill>
             {discount && <Pill v="sale">{discount}% OFF</Pill>}
           </BadgeStack>
-
           <MainImage src={product.image} alt={product.name} />
-
-          <ThumbRow>
-            {[0, 1, 2].map(i => (
-              <Thumb key={i} $active={activeThumb === i} onClick={() => setActiveThumb(i)}>
-                <img src={product.image} alt={`view ${i + 1}`} />
-              </Thumb>
-            ))}
-          </ThumbRow>
         </ImageCard>
 
-        {/* ── Right ── */}
+        {/* Details card */}
         <DetailsCard>
           <CatTag>{product.category}</CatTag>
           <Title>{product.name}</Title>
 
           <RatingRow>
-            <GreenBadge>{product.rating} ★</GreenBadge>
+            <GreenBadge>{product.rating.toFixed(1)} ★</GreenBadge>
             <Stars r={product.rating} />
             <RevText>{product.reviews} reviews</RevText>
           </RatingRow>
@@ -467,10 +546,10 @@ export default function ProductDetail() {
           <Hr />
 
           <PriceRow>
-            <BigPrice>₹{product.price.toFixed(2)}</BigPrice>
+            <BigPrice>₹{product.price}</BigPrice>
             {product.originalPrice && (
               <>
-                <StrikePrice>₹{product.originalPrice.toFixed(2)}</StrikePrice>
+                <StrikePrice>₹{product.originalPrice}</StrikePrice>
                 {discount && <OffBadge>{discount}% off</OffBadge>}
               </>
             )}
@@ -487,7 +566,7 @@ export default function ProductDetail() {
               </MV>
             </MetaBox>
             <MetaBox><ML>Weight</ML><MV>{product.weight || "—"}</MV></MetaBox>
-            <MetaBox><ML>Rating</ML><MV>{product.rating} / 5</MV></MetaBox>
+            <MetaBox><ML>Rating</ML><MV>{product.rating.toFixed(1)} / 5</MV></MetaBox>
           </MetaGrid>
 
           <DeliveryStrip>
@@ -515,8 +594,107 @@ export default function ProductDetail() {
         </DetailsCard>
       </Wrapper>
 
+      {/* Reviews Card */}
+      <ReviewsCard>
+        <h3 className="text-lg font-black text-stone-900 mb-4">Customer Reviews</h3>
+        
+        {/* List reviews */}
+        <div className="space-y-4">
+          {reviews.length > 0 ? (
+            reviews.map((r, idx) => (
+              <ReviewItem key={idx}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-sm text-stone-800">{r.user?.fullName || 'Anonymous'}</span>
+                    {r.isVerifiedPurchase && (
+                      <span className="bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border border-emerald-100">
+                        Verified Buyer
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-stone-400 font-bold">
+                    {new Date(r.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Stars r={r.rating} />
+                  {r.title && <span className="font-black text-stone-900 text-sm">{r.title}</span>}
+                </div>
+                <p className="text-xs text-stone-500 font-medium leading-relaxed mt-2">{r.comment}</p>
+              </ReviewItem>
+            ))
+          ) : (
+            <p className="text-sm text-stone-400 font-medium py-4">No reviews yet for this product. Be the first to leave one!</p>
+          )}
+        </div>
+
+        {/* Review form */}
+        {isLoggedIn && verifiedOrder ? (
+          <Form onSubmit={handleReviewSubmit}>
+            <h4 className="text-sm font-black text-stone-800 mb-2">Write a Review</h4>
+            <p className="text-xs text-stone-500 font-medium mb-4">You purchased this product in order {verifiedOrder.orderNumber}</p>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-1">Rating</label>
+                <select 
+                  value={reviewRating} 
+                  onChange={(e) => setReviewRating(Number(e.target.value))}
+                  className="w-full bg-white border border-stone-200 rounded-lg p-2 text-xs font-bold outline-none"
+                >
+                  <option value="5">5 Stars — Excellent</option>
+                  <option value="4">4 Stars — Very Good</option>
+                  <option value="3">3 Stars — Average</option>
+                  <option value="2">2 Stars — Poor</option>
+                  <option value="1">1 Star — Terrible</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-1">Title</label>
+                <input 
+                  type="text" 
+                  value={reviewTitle} 
+                  onChange={(e) => setReviewTitle(e.target.value)}
+                  placeholder="e.g. Crisp and delicious!"
+                  className="w-full bg-white border border-stone-200 rounded-lg p-2.5 text-xs font-bold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-500 mb-1">Comment</label>
+                <textarea 
+                  rows="3" 
+                  value={reviewComment} 
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="Share your thoughts about this product..."
+                  className="w-full bg-white border border-stone-200 rounded-lg p-2.5 text-xs font-semibold outline-none"
+                  required
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={submittingReview}
+                className="w-full py-2.5 rounded-xl bg-[#153d2b] hover:bg-emerald-800 text-white font-extrabold text-xs transition cursor-pointer"
+              >
+                {submittingReview ? "Submitting..." : "Submit Review"}
+              </button>
+            </div>
+          </Form>
+        ) : isLoggedIn ? (
+          <div className="mt-4 p-4 rounded-xl bg-stone-50 border border-stone-200 text-center text-xs font-bold text-stone-500">
+            🔒 Only verified purchases of this product can submit a review.
+          </div>
+        ) : (
+          <div className="mt-4 p-4 rounded-xl bg-stone-50 border border-stone-200 text-center text-xs font-bold text-stone-500">
+            Please <Link to="/login" className="text-emerald-800 hover:underline">sign in</Link> to write a review.
+          </div>
+        )}
+      </ReviewsCard>
+
       {toast && (
-        <Toast>✅ {qty} × {product.name} added to cart!</Toast>
+        <Toast>✅ {toast}</Toast>
       )}
     </Page>
   );

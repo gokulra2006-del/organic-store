@@ -39,3 +39,14 @@ exports.deleteReview = asyncHandler(async (req, res) => {
     await Review.findOneAndUpdate({ _id: req.params.id, user: req.user._id }, { isActive: false });
     res.json(new ApiResponse(200, null, 'Review deleted'));
 });
+
+exports.moderateReview = asyncHandler(async (req, res) => {
+    const { status, isActive } = req.body;
+    const review = await Review.findByIdAndUpdate(
+        req.params.id,
+        { ...(status && { status }), ...(isActive !== undefined && { isActive }) },
+        { new: true }
+    );
+    if (!review) throw new ApiError(404, 'Review not found');
+    res.json(new ApiResponse(200, review, 'Review updated'));
+});

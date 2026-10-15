@@ -4,7 +4,7 @@ const ORDER_STATUS = ['pending', 'confirmed', 'processing', 'packed', 'out_for_d
 const PAYMENT_STATUS = ['pending', 'completed', 'failed', 'refunded'];
 
 const orderItemSchema = new mongoose.Schema({
-    product: { type: String, required: true },
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
     name: { type: String, required: true },
     quantity: { type: Number, required: true },
     price: { type: Number, required: true },
@@ -13,7 +13,7 @@ const orderItemSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
     orderNumber: { type: String, unique: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    user: { type: mongoose.Schema.Types.Mixed, required: true },
     items: [orderItemSchema],
     shippingAddress: {
         fullName: String,
@@ -53,6 +53,7 @@ orderSchema.pre('save', async function(next) {
 });
 
 orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ status: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);
