@@ -40,6 +40,14 @@ Organic Store is a comprehensive full-stack e-commerce solution. It features use
 
 ## 🏗 Architecture & Directory Structure
 
+### System Architecture Diagram
+
+Use this diagram to explain the complete request flow and technology layers during your faculty presentation:
+
+![Organic Store system architecture](docs/organic-store-architecture.svg)
+
+The main flow is: **User → React Frontend → Express API → MongoDB**, with OTP email, Razorpay payments, and real-time order tracking connected through the backend.
+
 ```text
 ├── backend/              # Node.js/Express backend
 │   ├── src/

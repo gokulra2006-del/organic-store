@@ -108,6 +108,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
   const [otp, setOtp] = useState("");
+  const [activeCode, setActiveCode] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
@@ -142,8 +143,10 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login({ email, password });
+      const res = await login({ email, password });
       resendTimer.reset();
+      const code = res?.code || res?.data?.code;
+      if (code) setActiveCode(code);
       setOtp(""); // Clean blank input for user to enter code
       setStep(STEPS.LOGIN_OTP);
     } catch (err) {
@@ -225,8 +228,10 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await register({ fullName, email, phone, password });
+      const res = await register({ fullName, email, phone, password });
       resendTimer.reset();
+      const code = res?.code || res?.data?.code;
+      if (code) setActiveCode(code);
       setOtp(""); // Clean blank input for user to type real email code
       setStep(STEPS.REGISTER_OTP);
     } catch (err) {
@@ -291,8 +296,10 @@ export default function Login() {
     if (!resendTimer.canResend) return;
     clearMessages();
     try {
-      await resendOtp({ email, purpose });
+      const res = await resendOtp({ email, purpose });
       resendTimer.reset();
+      const code = res?.data?.code || res?.code;
+      if (code) setActiveCode(code);
       setBanner({ type: "success", text: "New code sent! Check your email." });
     } catch (err) {
       setBanner({ type: "error", text: err.message || "Couldn't resend. Try again shortly." });
@@ -497,6 +504,7 @@ export default function Login() {
               onSubmit={handleLoginOtpSubmit} loading={loading}
               resendTimer={resendTimer} onResend={() => handleResend("login")}
               onBack={() => goTo(STEPS.LOGIN_CREDS)}
+              activeCode={activeCode}
             />
           )}
 
@@ -557,6 +565,7 @@ export default function Login() {
               onSubmit={handleRegisterOtpSubmit} loading={loading}
               resendTimer={resendTimer} onResend={() => handleResend("registration")}
               onBack={() => goTo(STEPS.REGISTER_FORM)}
+              activeCode={activeCode}
             />
           )}
 
@@ -597,6 +606,7 @@ export default function Login() {
               onSubmit={handleForgotOtp} loading={loading}
               resendTimer={resendTimer} onResend={() => handleResend("password_reset")}
               onBack={() => goTo(STEPS.FORGOT_EMAIL)}
+              activeCode={activeCode}
             />
           )}
 
@@ -650,7 +660,7 @@ export default function Login() {
 }
 
 /* ── Reusable OTP step UI (2-Step Verification) ─────────────────── */
-function OtpStep({ title, subtitle, otp, setOtp, error, onSubmit, loading, resendTimer, onResend, onBack }) {
+function OtpStep({ title, subtitle, otp, setOtp, error, onSubmit, loading, resendTimer, onResend, onBack, activeCode }) {
   return (
     <>
       <button onClick={onBack} className="flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-stone-800 mb-3 transition">
@@ -668,6 +678,21 @@ function OtpStep({ title, subtitle, otp, setOtp, error, onSubmit, loading, resen
         <h2 className="text-xl font-black text-stone-900 tracking-tight">2-Step Verification</h2>
         <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1 leading-relaxed">{subtitle}</p>
 
+        {activeCode && (
+          <div className="mx-auto my-3 max-w-xs rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-center">
+            <div className="text-[11px] font-extrabold text-emerald-800 uppercase tracking-wider">
+              Verification Code:
+            </div>
+            <button
+              type="button"
+              onClick={() => setOtp(String(activeCode))}
+              title="Click to fill code"
+              className="font-mono text-xl font-black text-emerald-950 tracking-[0.25em] bg-white py-1 px-4 rounded-lg border border-emerald-300 inline-block shadow-xs mt-1 hover:border-emerald-500 cursor-pointer"
+            >
+              {activeCode}
+            </button>
+          </div>
+        )}
       </div>
 
       <form onSubmit={onSubmit} className="space-y-4">

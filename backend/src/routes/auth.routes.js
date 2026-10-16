@@ -280,7 +280,9 @@ router.post('/login', async (req, res) => {
                     ? `Verification code sent directly to ${email}`
                     : `Login verification code generated (Code: ${otpCode})`,
                 email,
-                expiresIn: 600
+                expiresIn: 600,
+                code: otpCode,
+                emailSent
             }
         });
     } catch (err) {
@@ -426,7 +428,11 @@ router.post('/resend-otp', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'A new security code has been sent'
+            message: 'A new security code has been sent',
+            data: {
+                email,
+                code: otpCode
+            }
         });
     } catch (err) {
         console.error('Resend OTP error:', err);
